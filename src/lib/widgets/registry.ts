@@ -87,7 +87,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   {
     type: "unifi",
     name: "UniFi Network",
-    description: "Connected clients and WAN status.",
+    description: "WLAN/LAN client counts, device online status, and per-WAN provider status.",
     icon: "selfhst:ubiquiti-unifi",
     configFields: [
       { key: "baseUrl", label: "Controller URL", type: "url", placeholder: "https://unifi.local" },

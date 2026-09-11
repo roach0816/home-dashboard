@@ -3,10 +3,22 @@ import type { UnifiConfig } from "@/lib/types";
 import { integrationFetch } from "@/lib/insecureFetch";
 import { assertOk } from "./util";
 
+export type UnifiWan = {
+  name: string;
+  ispName?: string;
+  uptimePercent?: number;
+};
+
 export type UnifiData = {
-  clientCount: number;
+  totalClients: number;
+  wiredClients: number;
+  wirelessClients: number;
+  deviceCount: number;
+  devicesOnline: number;
   wanStatus: string;
   wanIp?: string;
+  /** Per-WAN provider info, when the controller supports the newer v2 WAN API. Empty if not. */
+  wans: UnifiWan[];
 };
 
 async function login(base: string, username: string, password: string, insecure?: boolean) {
@@ -38,6 +50,49 @@ async function login(base: string, username: string, password: string, insecure?
   return { cookie, prefix };
 }
 
+/** Best-effort — this v2 API is only on newer UniFi OS controllers. Returns [] if unsupported. */
+async function fetchWanProviders(
+  base: string,
+  prefix: string,
+  site: string,
+  headers: Record<string, string>,
+  insecure: boolean | undefined,
+): Promise<UnifiWan[]> {
+  try {
+    const res = await integrationFetch(`${base}${prefix}/v2/api/site/${site}/wan/enriched-configuration`, {
+      headers,
+      insecure,
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const body = (await res.json()) as unknown;
+    const list: unknown[] = Array.isArray(body)
+      ? body
+      : Array.isArray((body as { data?: unknown[] })?.data)
+        ? (body as { data: unknown[] }).data
+        : [body];
+
+    const wans: UnifiWan[] = [];
+    for (const entry of list) {
+      const e = entry as {
+        configuration?: { name?: string; wan_networkgroup?: string };
+        details?: { service_provider?: { name?: string } };
+        statistics?: { uptime_percentage?: number };
+      };
+      const name = e?.configuration?.name || e?.configuration?.wan_networkgroup;
+      if (!name) continue;
+      wans.push({
+        name,
+        ispName: e?.details?.service_provider?.name,
+        uptimePercent: e?.statistics?.uptime_percentage,
+      });
+    }
+    return wans;
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchUnifiData(
   config: UnifiConfig,
   secrets: Record<string, string>,
@@ -56,7 +111,18 @@ export async function fetchUnifiData(
     cache: "no-store",
   });
   await assertOk(clientsRes, "UniFi");
-  const clientsBody = (await clientsRes.json()) as { data: unknown[] };
+  const clientsBody = (await clientsRes.json()) as { data: Array<{ is_wired?: boolean }> };
+  const clients = clientsBody.data ?? [];
+  const wiredClients = clients.filter((c) => c.is_wired).length;
+
+  const devicesRes = await integrationFetch(`${base}${prefix}/api/s/${site}/stat/device`, {
+    headers,
+    insecure: config.insecureTls,
+    cache: "no-store",
+  });
+  await assertOk(devicesRes, "UniFi");
+  const devicesBody = (await devicesRes.json()) as { data: Array<{ state?: number }> };
+  const devices = devicesBody.data ?? [];
 
   const healthRes = await integrationFetch(`${base}${prefix}/api/s/${site}/stat/health`, {
     headers,
@@ -69,9 +135,16 @@ export async function fetchUnifiData(
   };
   const wan = healthBody.data?.find((s) => s.subsystem === "wan");
 
+  const wans = await fetchWanProviders(base, prefix, site, headers, config.insecureTls);
+
   return {
-    clientCount: clientsBody.data?.length ?? 0,
+    totalClients: clients.length,
+    wiredClients,
+    wirelessClients: clients.length - wiredClients,
+    deviceCount: devices.length,
+    devicesOnline: devices.filter((d) => d.state === 1).length,
     wanStatus: wan?.status ?? "unknown",
     wanIp: wan?.wan_ip,
+    wans,
   };
 }

@@ -30,6 +30,11 @@ the page can view and edit it.
   `src/lib/widgets/registry.ts` (see [Adding a widget type](#adding-a-widget-type)).
 - Autosave (debounced) to a JSON file on disk — no database required
 - `/api/healthz` for Kubernetes probes
+- Favicon, `apple-touch-icon`, and a web app manifest (192px/512px icons) —
+  the dashboard gets a proper icon in browser tabs and when added to a
+  phone's home screen, not the default Next.js logo. Source SVG is
+  [src/app/icon.svg](src/app/icon.svg); regenerate the PNGs from it if you
+  change the design.
 
 Home Assistant *live entity* integrations (showing device/sensor state on a
 card, not just an icon) are intentionally not built yet — the data model
