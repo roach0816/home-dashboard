@@ -140,7 +140,9 @@ git.
 **1. Build the image.**
 [.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml)
 already builds and pushes to `ghcr.io/roach0816/home-dashboard` on every
-push to `main`, tagged `latest` and with the commit SHA. Nothing to do
+push to `main`, tagged `latest` and with the commit SHA — as a multi-arch
+manifest (`linux/amd64` + `linux/arm64`), so it runs on both standard
+x86 servers and ARM boards like a Raspberry Pi cluster. Nothing to do
 here unless you forked the repo, in which case it'll publish to
 `ghcr.io/<your-github-username>/home-dashboard` instead.
 
@@ -169,11 +171,26 @@ kubectl get all -n home-dashboard
 
 **4. Create the Ingress.** *(environment-specific — this is the part
 that's genuinely yours to fill in: hostname, ingress class, and which
-cert-manager `ClusterIssuer` you run.)* Either use Rancher's UI (**Service
-Discovery → Ingresses → Create**, namespace `home-dashboard`, backend
-Service `home-dashboard` port `80`, and make sure to set **Path Type** to
-`Prefix` — Rancher's form doesn't default it, and Kubernetes rejects an
-Ingress without one), or apply this directly:
+cert-manager `ClusterIssuer` you run.)* First check which ingress
+controller your cluster actually runs — plain K3s defaults to `traefik`,
+but plenty of clusters run `ingress-nginx` instead (or alongside it):
+
+```bash
+kubectl get ingressclass
+```
+
+**Use "Edit as YAML" from the start, not Rancher's guided form fields.**
+The guided Ingress form has repeatedly produced broken results in
+practice: it doesn't default **Path Type**, so Kubernetes rejects the
+Ingress outright (`pathType: Required value: pathType must be
+specified`) unless you explicitly pick `Prefix`; and separately, it can
+silently save an Ingress with *no* `cert-manager.io/cluster-issuer`
+annotation and *no* `tls:` block even when the fields looked filled in —
+which doesn't error, it just quietly serves Traefik/nginx's default
+self-signed "Fake Certificate" forever, since cert-manager never even
+gets triggered. Skip the guided fields entirely: **Service Discovery →
+Ingresses → Create → Edit as YAML**, and paste this in (swap
+`ingressClassName` for whatever `kubectl get ingressclass` returned):
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -184,7 +201,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: <YOUR_CLUSTER_ISSUER>   # kubectl get clusterissuer
 spec:
-  ingressClassName: traefik
+  ingressClassName: <YOUR_INGRESS_CLASS>   # kubectl get ingressclass — often "traefik" or "nginx"
   rules:
     - host: <YOUR_HOSTNAME>
       http:
@@ -204,7 +221,8 @@ spec:
 A filled-in-able copy of this also lives at
 [deploy/k8s/ingress.example.yaml](deploy/k8s/ingress.example.yaml) — keep
 your real version out of git (a local copy, or applied straight from
-Rancher's UI, both work).
+Rancher's UI, both work). `kubectl apply -f` works too if you'd rather
+skip the Rancher UI for this step entirely.
 
 **5. Point DNS at it — internally only.** This app has no login, so
 `<YOUR_HOSTNAME>` should only resolve inside your network (a DNS override
@@ -214,11 +232,25 @@ solver (Cloudflare, Route53, ...) rather than HTTP-01, certificate
 issuance doesn't need the host to be publicly reachable at all, so this
 works even though nothing about it is internet-facing.
 
-**6. Verify the certificate issued:**
+**6. Verify the certificate actually issued.** Don't just trust that the
+browser will stop complaining — confirm cert-manager did its job:
 
 ```bash
-kubectl get certificate -n home-dashboard
+kubectl get ingress -n home-dashboard -o yaml   # confirm the annotation + tls: block really landed
+kubectl get certificate -n home-dashboard -w    # watch until READY is True
 kubectl describe certificate home-dashboard-tls -n home-dashboard
+```
+
+If `get certificate` returns nothing at all, cert-manager was never
+triggered — that almost always means the annotation or `tls:` block
+above didn't make it into the Ingress (see step 4). If a Certificate
+*does* exist but sits at `READY: False`, dig into why the DNS-01
+challenge is stuck:
+
+```bash
+kubectl get certificaterequest -n home-dashboard
+kubectl get challenges -n home-dashboard
+kubectl describe challenge <name> -n home-dashboard
 ```
 
 **7. Keep it updated.** Fleet re-applies the bundle on every push, but the

@@ -1,11 +1,16 @@
 # Reference only — this file is NOT applied by the Fleet bundle (it's not
 # listed in kustomization.yaml). Ingress/hostname is cluster-specific
 # config, not application code, so create the real one either:
-#   - In Rancher: Service Discovery -> Ingresses -> Create, in the
-#     `home-dashboard` namespace, pointed at the `home-dashboard` Service
-#     on port 80; or
-#   - `kubectl apply -f` a copy of this file with YOUR_HOSTNAME filled in
-#     (kept outside git).
+#   - In Rancher: Service Discovery -> Ingresses -> Create -> Edit as YAML
+#     (in the `home-dashboard` namespace), pointed at the `home-dashboard`
+#     Service on port 80 — use "Edit as YAML" and paste this in rather
+#     than the guided form fields. The guided form has repeatedly (a)
+#     not defaulted Path Type, which Kubernetes rejects outright, and
+#     (b) silently saved an Ingress with no cert-manager annotation and
+#     no tls: block at all — no error, it just serves the ingress
+#     controller's default self-signed cert forever; or
+#   - `kubectl apply -f` a copy of this file with the placeholders below
+#     filled in (kept outside git).
 #
 # LAN-only by design: this app has no login, so whatever hostname you pick
 # should only resolve inside your network (e.g. a DNS override in
@@ -16,6 +21,10 @@
 # than HTTP-01 — HTTP-01 requires the ACME server to reach you over the
 # public internet. Replace `letsencrypt-prod` with your actual
 # ClusterIssuer name (`kubectl get clusterissuer`).
+#
+# ingressClassName varies by cluster — plain K3s defaults to `traefik`,
+# but plenty of clusters run `ingress-nginx` instead. Check with
+# `kubectl get ingressclass` rather than assuming.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -24,7 +33,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  ingressClassName: traefik
+  ingressClassName: traefik   # or nginx — kubectl get ingressclass
   rules:
     - host: YOUR_HOSTNAME
       http:
