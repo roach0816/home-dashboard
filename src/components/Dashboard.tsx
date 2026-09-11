@@ -248,7 +248,7 @@ export default function Dashboard({
   const activeWidget = active?.type === "widget" ? widgets.find((w) => w.id === active.id) : undefined;
 
   return (
-    <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="animate-page-in mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold text-foreground">{title}</h1>

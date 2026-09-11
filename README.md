@@ -63,6 +63,11 @@ widget also gets a **Test connection** button before you save, so a typo
 doesn't just silently fail later, and every secret field has a show/hide
 toggle so you can actually verify what you typed.
 
+Every widget also has a **Card size** (Full or Half — half condenses the
+display to fit a narrower card, so two fit where one did) and, for widgets
+with a device/service behind them, a **Link card to device** checkbox that
+makes the whole card open that device's URL in a new tab.
+
 **Credentials never reach the browser.** Each widget's secret fields
 (passwords, API keys, tokens) are stored server-side in the same
 `dashboard.json` the rest of the dashboard uses, keyed by widget id — but

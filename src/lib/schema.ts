@@ -18,57 +18,77 @@ const label = z.string().max(200).optional();
 const baseUrl = z.string().min(1).max(500);
 const insecureTls = z.boolean().optional();
 const refreshSeconds = z.number().int().min(5).max(3600).optional();
+const cardSize = z.enum(["full", "half"]).optional();
+const linkToDevice = z.boolean().optional();
 
 const weatherWidgetConfigSchema = z.object({
   label,
   refreshSeconds,
+  cardSize,
   stationId: z.number().int().positive().optional(),
   unit: z.enum(["fahrenheit", "celsius"]).default("fahrenheit"),
   display: z.enum(["full", "current", "forecast"]).default("full"),
   forecastDays: z.number().int().min(1).max(10).default(4),
 });
 
-const homeAssistantConfigSchema = z.object({ label, refreshSeconds, baseUrl, insecureTls });
-const proxmoxConfigSchema = z.object({ label, refreshSeconds, baseUrl, insecureTls });
-const kubernetesConfigSchema = z.object({ label, refreshSeconds, apiUrl: baseUrl, insecureTls });
-const adguardConfigSchema = z.object({ label, refreshSeconds, baseUrl });
+const homeAssistantConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl, insecureTls });
+const proxmoxConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl, insecureTls });
+const kubernetesConfigSchema = z.object({
+  label,
+  refreshSeconds,
+  cardSize,
+  linkToDevice,
+  apiUrl: baseUrl,
+  insecureTls,
+});
+const adguardConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
 const unifiConfigSchema = z.object({
   label,
   refreshSeconds,
+  cardSize,
+  linkToDevice,
   baseUrl,
   site: z.string().min(1).max(100).default("default"),
   insecureTls,
 });
-const piholeConfigSchema = z.object({ label, refreshSeconds, baseUrl });
-const portainerConfigSchema = z.object({ label, refreshSeconds, baseUrl, insecureTls });
-const plexConfigSchema = z.object({ label, refreshSeconds, baseUrl });
-const jellyfinConfigSchema = z.object({ label, refreshSeconds, baseUrl });
+const piholeConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
+const portainerConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl, insecureTls });
+const plexConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
+const jellyfinConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
 const sonarrConfigSchema = z.object({
   label,
   refreshSeconds,
+  cardSize,
+  linkToDevice,
   baseUrl,
   calendarDays: z.number().int().min(1).max(30).default(7),
 });
 const radarrConfigSchema = z.object({
   label,
   refreshSeconds,
+  cardSize,
+  linkToDevice,
   baseUrl,
   calendarDays: z.number().int().min(1).max(30).default(7),
 });
-const truenasConfigSchema = z.object({ label, refreshSeconds, baseUrl, insecureTls });
-const uptimeKumaConfigSchema = z.object({ label, refreshSeconds, baseUrl });
-const enphaseConfigSchema = z.object({ label, refreshSeconds, baseUrl });
-const speedtestConfigSchema = z.object({ label });
-const nextcloudConfigSchema = z.object({ label, refreshSeconds, baseUrl });
+const truenasConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl, insecureTls });
+const uptimeKumaConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
+const enphaseConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
+const speedtestConfigSchema = z.object({ label, cardSize });
+const nextcloudConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
 const pingMonitorConfigSchema = z.object({
   label,
   refreshSeconds,
+  cardSize,
+  linkToDevice,
   host: z.string().min(1).max(300),
   port: z.number().int().min(1).max(65535).default(443),
 });
 const printerConfigSchema = z.object({
   label,
   refreshSeconds,
+  cardSize,
+  linkToDevice,
   host: z.string().min(1).max(300),
   port: z.number().int().min(1).max(65535).default(161),
 });

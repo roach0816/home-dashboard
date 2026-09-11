@@ -26,6 +26,10 @@ export default function GenericWidgetConfigModal({
       values.refreshSeconds =
         (initialConfig.refreshSeconds as number) ?? definition.defaultRefreshSeconds ?? 300;
     }
+    values.cardSize = (initialConfig.cardSize as string) || "full";
+    if (definition.linkField) {
+      values.linkToDevice = Boolean(initialConfig.linkToDevice);
+    }
     for (const field of definition.configFields) {
       const existing = initialConfig[field.key];
       if (existing !== undefined) {
@@ -128,6 +132,39 @@ export default function GenericWidgetConfigModal({
               className="w-28 rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
             />
           </div>
+        )}
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">Card size</label>
+          <div className="flex gap-2">
+            {(["full", "half"] as const).map((size) => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => setField("cardSize", size)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium capitalize ${
+                  (configValues.cardSize || "full") === size
+                    ? "bg-accent text-white"
+                    : "border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {definition.linkField && (
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input
+              type="checkbox"
+              checked={Boolean(configValues.linkToDevice)}
+              onChange={(e) => setField("linkToDevice", e.target.checked)}
+              className="accent-accent"
+            />
+            Link card to device
+            <span className="text-xs text-muted">(opens it in a new tab)</span>
+          </label>
         )}
 
         {definition.configFields.map((field) =>

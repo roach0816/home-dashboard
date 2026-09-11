@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../Modal";
 import PasswordInput from "./PasswordInput";
-import type { WeatherDisplayMode, WeatherWidgetConfig } from "@/lib/types";
+import type { WeatherDisplayMode, WidgetCardSize, WeatherWidgetConfig } from "@/lib/types";
 
 type Station = { id: number; name: string };
 
@@ -36,6 +36,7 @@ export default function TempestConfigModal({
   const [display, setDisplay] = useState<WeatherDisplayMode>(initial?.display ?? "full");
   const [forecastDays, setForecastDays] = useState(initial?.forecastDays ?? 4);
   const [refreshSeconds, setRefreshSeconds] = useState(initial?.refreshSeconds ?? 300);
+  const [cardSize, setCardSize] = useState<WidgetCardSize>(initial?.cardSize ?? "full");
   const [saving, setSaving] = useState(false);
 
   async function loadStations(token?: string) {
@@ -82,7 +83,7 @@ export default function TempestConfigModal({
       }).catch(() => {});
     }
     setSaving(false);
-    onSave({ stationId, label: label.trim() || undefined, unit, display, forecastDays, refreshSeconds });
+    onSave({ stationId, label: label.trim() || undefined, unit, display, forecastDays, refreshSeconds, cardSize });
   }
 
   const canSave = stationId != null;
@@ -175,6 +176,24 @@ export default function TempestConfigModal({
             }}
             className="w-28 rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">Card size</label>
+          <div className="flex gap-2">
+            {(["full", "half"] as const).map((size) => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => setCardSize(size)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium capitalize ${
+                  cardSize === size ? "bg-accent text-white" : "border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>

@@ -5,17 +5,38 @@ import type { PrinterData } from "@/lib/integrations/printer";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
 import { WidgetFrame, WidgetLoading, WidgetError } from "../primitives";
 
-export default function PrinterDisplay({ widget }: { widget: Extract<Widget, { type: "printer-snmp" }> }) {
+export default function PrinterDisplay({
+  widget,
+  compact,
+}: {
+  widget: Extract<Widget, { type: "printer-snmp" }>;
+  compact?: boolean;
+}) {
   const label = widget.config.label || "Printer";
   const { data, error } = useWidgetData<PrinterData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} />;
-  if (!data) return <WidgetLoading label={label} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} />;
 
   return (
-    <WidgetFrame label={label}>
+    <WidgetFrame label={label} compact={compact}>
       {data.supplies.length === 0 ? (
         <p className="text-xs text-muted">No supply data reported.</p>
+      ) : compact ? (
+        <div className="flex flex-col gap-1">
+          {data.supplies.map((supply, i) => {
+            const low = supply.percent != null && supply.percent <= 15;
+            const statusIsBad = supply.status != null && supply.status !== "OK";
+            return (
+              <div key={`${supply.description}-${i}`} className="flex items-center justify-between gap-1.5 text-[11px]">
+                <span className="truncate text-foreground">{supply.description}</span>
+                <span className={`shrink-0 ${low || statusIsBad ? "text-red-400" : "text-muted"}`}>
+                  {supply.percent != null ? `${supply.percent}%` : (supply.status ?? "—")}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       ) : (
         <div className="flex flex-col gap-2">
           {data.supplies.map((supply, i) => {

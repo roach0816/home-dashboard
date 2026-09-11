@@ -24,10 +24,19 @@ export type Category = {
 // widget id (see src/lib/store.ts). The registry in src/lib/widgets/registry.ts
 // declares which fields are secret for each widget type.
 
+export type WidgetCardSize = "full" | "half";
+
 export type BaseWidgetConfig = {
   label?: string;
   /** How often to poll for new data. Ignored by widgets that don't auto-refresh (e.g. the speed test). */
   refreshSeconds?: number;
+  /** Card width in the widgets row — "half" condenses the display to fit a narrower card. */
+  cardSize?: WidgetCardSize;
+  /**
+   * When true, the whole card links out to the device/service it shows data
+   * about (the registry's `linkField` config key), opening in a new tab.
+   */
+  linkToDevice?: boolean;
 };
 
 export type WeatherDisplayMode = "full" | "current" | "forecast";

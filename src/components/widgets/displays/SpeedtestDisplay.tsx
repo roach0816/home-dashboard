@@ -31,7 +31,13 @@ async function measureUpload(): Promise<number> {
 
 // This widget does not auto-refresh (unlike the rest) — it only runs on a
 // manual click, so it doesn't silently burn bandwidth every few minutes.
-export default function SpeedtestDisplay({ widget }: { widget: Extract<Widget, { type: "speedtest" }> }) {
+export default function SpeedtestDisplay({
+  widget,
+  compact,
+}: {
+  widget: Extract<Widget, { type: "speedtest" }>;
+  compact?: boolean;
+}) {
   const label = widget.config.label || "Internet Speed Test";
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
@@ -52,30 +58,42 @@ export default function SpeedtestDisplay({ widget }: { widget: Extract<Widget, {
     }
   }
 
+  const items = [
+    { value: result?.downloadMbps.toFixed(1) ?? "", unit: "Mbps", caption: "download" },
+    { value: result?.uploadMbps.toFixed(1) ?? "", unit: "Mbps", caption: "upload" },
+  ];
+  if (!compact && result) items.push({ value: String(Math.round(result.latencyMs)), unit: "ms", caption: "latency" });
+
   return (
-    <div className="flex flex-col gap-2.5 p-3.5">
+    <div className={`flex flex-col gap-2.5 ${compact ? "p-2.5" : "p-3.5"}`}>
       <div className="flex items-center justify-between gap-2">
         <p className="truncate text-sm font-medium text-foreground">{label}</p>
+        {!compact && (
+          <button
+            type="button"
+            onClick={runTest}
+            disabled={running}
+            className="shrink-0 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+          >
+            {running ? "Testing…" : "Run test"}
+          </button>
+        )}
+      </div>
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      {result && <StatRow compact={compact} items={items} />}
+      {!result && !error && !running && !compact && (
+        <p className="text-xs text-muted">Click Run test to measure your connection.</p>
+      )}
+      {compact && (
         <button
           type="button"
           onClick={runTest}
           disabled={running}
-          className="shrink-0 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+          className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
         >
           {running ? "Testing…" : "Run test"}
         </button>
-      </div>
-      {error && <p className="text-xs text-red-400">{error}</p>}
-      {result && (
-        <StatRow
-          items={[
-            { value: result.downloadMbps.toFixed(1), unit: "Mbps", caption: "download" },
-            { value: result.uploadMbps.toFixed(1), unit: "Mbps", caption: "upload" },
-            { value: Math.round(result.latencyMs), unit: "ms", caption: "latency" },
-          ]}
-        />
       )}
-      {!result && !error && !running && <p className="text-xs text-muted">Click Run test to measure your connection.</p>}
     </div>
   );
 }

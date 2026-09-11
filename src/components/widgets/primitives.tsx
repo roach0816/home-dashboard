@@ -1,36 +1,50 @@
 "use client";
 
-export function WidgetFrame({ label, children }: { label: string; children: React.ReactNode }) {
+export function WidgetFrame({
+  label,
+  compact,
+  children,
+}: {
+  label: string;
+  compact?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col gap-2.5 p-3.5">
+    <div className={`flex flex-col ${compact ? "gap-1.5 p-2.5" : "gap-2.5 p-3.5"}`}>
       <p className="truncate text-sm font-medium text-foreground">{label}</p>
       {children}
     </div>
   );
 }
 
-export function WidgetLoading({ label }: { label: string }) {
+export function WidgetLoading({ label, compact }: { label: string; compact?: boolean }) {
   return (
-    <WidgetFrame label={label}>
+    <WidgetFrame label={label} compact={compact}>
       <p className="text-xs text-muted">Loading…</p>
     </WidgetFrame>
   );
 }
 
-export function WidgetError({ label, error }: { label: string; error: string }) {
+export function WidgetError({ label, error, compact }: { label: string; error: string; compact?: boolean }) {
   return (
-    <WidgetFrame label={label}>
-      <p className="text-xs text-red-400">{error}</p>
+    <WidgetFrame label={label} compact={compact}>
+      <p className={compact ? "line-clamp-3 text-xs text-red-400" : "text-xs text-red-400"}>{error}</p>
     </WidgetFrame>
   );
 }
 
-export function StatRow({ items }: { items: Array<{ value: string | number; unit?: string; caption: string }> }) {
+export function StatRow({
+  items,
+  compact,
+}: {
+  items: Array<{ value: string | number; unit?: string; caption: string }>;
+  compact?: boolean;
+}) {
   return (
-    <div className="flex gap-4">
+    <div className={`flex ${compact ? "flex-col gap-1" : "gap-4"}`}>
       {items.map((item, i) => (
         <div key={i} className="flex flex-col">
-          <span className="text-2xl font-semibold text-foreground">
+          <span className={compact ? "text-lg font-semibold text-foreground" : "text-2xl font-semibold text-foreground"}>
             {item.value}
             {item.unit && <span className="ml-0.5 text-sm font-normal text-muted">{item.unit}</span>}
           </span>

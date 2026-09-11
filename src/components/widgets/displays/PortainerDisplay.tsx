@@ -3,25 +3,30 @@
 import type { Widget } from "@/lib/types";
 import type { PortainerData } from "@/lib/integrations/portainer";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
-import { WidgetLoading, WidgetError, StatRow } from "../primitives";
+import { WidgetFrame, WidgetLoading, WidgetError, StatRow } from "../primitives";
 
-export default function PortainerDisplay({ widget }: { widget: Extract<Widget, { type: "portainer" }> }) {
+export default function PortainerDisplay({
+  widget,
+  compact,
+}: {
+  widget: Extract<Widget, { type: "portainer" }>;
+  compact?: boolean;
+}) {
   const label = widget.config.label || "Portainer";
   const { data, error } = useWidgetData<PortainerData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} />;
-  if (!data) return <WidgetLoading label={label} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} />;
+
+  const items = [
+    { value: data.runningContainers, caption: "running" },
+    { value: data.stoppedContainers, caption: "stopped" },
+  ];
+  if (!compact) items.push({ value: data.environmentCount, caption: "environments" });
 
   return (
-    <div className="flex flex-col gap-2.5 p-3.5">
-      <p className="truncate text-sm font-medium text-foreground">{label}</p>
-      <StatRow
-        items={[
-          { value: data.runningContainers, caption: "running" },
-          { value: data.stoppedContainers, caption: "stopped" },
-          { value: data.environmentCount, caption: "environments" },
-        ]}
-      />
-    </div>
+    <WidgetFrame label={label} compact={compact}>
+      <StatRow compact={compact} items={items} />
+    </WidgetFrame>
   );
 }

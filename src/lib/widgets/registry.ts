@@ -29,6 +29,12 @@ export type WidgetDefinition = {
   customConfig?: boolean;
   /** Default auto-refresh interval in seconds. Omit for widgets that don't poll (e.g. the speed test). */
   defaultRefreshSeconds?: number;
+  /**
+   * Config key holding the device/service URL (or host) this widget talks
+   * to, used to build the "link card to device" href. Omit for widgets with
+   * nothing sensible to link to (weather, speed test).
+   */
+  linkField?: string;
 };
 
 const insecureTlsField: ConfigFieldSpec = {
@@ -51,6 +57,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "home-assistant",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Home Assistant",
     description: "Entity count and how many are unavailable.",
@@ -60,6 +67,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "proxmox",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Proxmox VE",
     description: "CPU/memory/disk usage, and running VMs vs. containers.",
@@ -80,6 +88,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "kubernetes",
+    linkField: "apiUrl",
     defaultRefreshSeconds: 60,
     name: "Kubernetes / Rancher",
     description: "Node readiness and pod status for a k3s/Rancher cluster.",
@@ -89,6 +98,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "adguard",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "AdGuard Home",
     description: "Queries today and percent blocked.",
@@ -101,6 +111,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "unifi",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "UniFi Network",
     description: "WLAN/LAN client counts, device online status, and per-WAN provider status.",
@@ -117,6 +128,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "pihole",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Pi-hole",
     description: "Queries today, percent blocked, and blocklist size.",
@@ -126,6 +138,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "portainer",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Portainer",
     description: "Running and stopped containers across all environments.",
@@ -135,6 +148,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "plex",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Plex",
     description: "Currently playing streams.",
@@ -144,6 +158,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "jellyfin",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Jellyfin",
     description: "Active playback sessions and library size.",
@@ -153,6 +168,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "sonarr",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Sonarr",
     description: "Download queue and upcoming episodes.",
@@ -165,6 +181,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "radarr",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Radarr",
     description: "Download queue and upcoming movies.",
@@ -177,6 +194,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "truenas",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "TrueNAS",
     description: "Pool usage and active alerts.",
@@ -186,6 +204,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "uptime-kuma",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Uptime Kuma",
     description: "Monitors up vs. down.",
@@ -195,6 +214,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "enphase",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Enphase Solar",
     description: "Current solar production and energy produced today.",
@@ -212,6 +232,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "nextcloud",
+    linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Nextcloud",
     description: "Active users and free storage.",
@@ -224,6 +245,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "ping-monitor",
+    linkField: "host",
     defaultRefreshSeconds: 60,
     name: "Ping / Port Monitor",
     description: "Checks whether a host and port is reachable.",
@@ -236,6 +258,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "printer-snmp",
+    linkField: "host",
     defaultRefreshSeconds: 300,
     name: "Network Printer",
     description: "Toner/ink and other supply levels via SNMP — works with most networked printers (Canon, Brother, HP, and others), not just one brand.",

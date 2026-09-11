@@ -3,24 +3,30 @@
 import type { Widget } from "@/lib/types";
 import type { HomeAssistantData } from "@/lib/integrations/homeAssistant";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
-import { WidgetLoading, WidgetError, StatRow } from "../primitives";
+import { WidgetFrame, WidgetLoading, WidgetError, StatRow } from "../primitives";
 
-export default function HomeAssistantDisplay({ widget }: { widget: Extract<Widget, { type: "home-assistant" }> }) {
+export default function HomeAssistantDisplay({
+  widget,
+  compact,
+}: {
+  widget: Extract<Widget, { type: "home-assistant" }>;
+  compact?: boolean;
+}) {
   const label = widget.config.label || "Home Assistant";
   const { data, error } = useWidgetData<HomeAssistantData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} />;
-  if (!data) return <WidgetLoading label={label} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} />;
 
   return (
-    <div className="flex flex-col gap-2.5 p-3.5">
-      <p className="truncate text-sm font-medium text-foreground">{label}</p>
+    <WidgetFrame label={label} compact={compact}>
       <StatRow
+        compact={compact}
         items={[
           { value: data.totalEntities, caption: "entities" },
           { value: data.unavailable, caption: "unavailable" },
         ]}
       />
-    </div>
+    </WidgetFrame>
   );
 }
