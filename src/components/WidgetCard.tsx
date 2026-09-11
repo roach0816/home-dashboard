@@ -25,6 +25,7 @@ import EnphaseDisplay from "./widgets/displays/EnphaseDisplay";
 import SpeedtestDisplay from "./widgets/displays/SpeedtestDisplay";
 import NextcloudDisplay from "./widgets/displays/NextcloudDisplay";
 import PingMonitorDisplay from "./widgets/displays/PingMonitorDisplay";
+import PrinterDisplay from "./widgets/displays/PrinterDisplay";
 
 function WidgetDisplay({ widget }: { widget: Widget }) {
   switch (widget.type) {
@@ -64,6 +65,8 @@ function WidgetDisplay({ widget }: { widget: Widget }) {
       return <NextcloudDisplay widget={widget} />;
     case "ping-monitor":
       return <PingMonitorDisplay widget={widget} />;
+    case "printer-snmp":
+      return <PrinterDisplay widget={widget} />;
   }
 }
 

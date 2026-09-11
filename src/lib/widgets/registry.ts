@@ -234,6 +234,26 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
     ],
     secretFields: [],
   },
+  {
+    type: "printer-snmp",
+    defaultRefreshSeconds: 300,
+    name: "Network Printer",
+    description: "Toner/ink and other supply levels via SNMP — works with most networked printers (Canon, Brother, HP, and others), not just one brand.",
+    icon: "mdi:printer",
+    configFields: [
+      { key: "host", label: "Printer IP/hostname", type: "text", placeholder: "192.168.1.50" },
+      { key: "port", label: "SNMP port", type: "number", defaultValue: 161 },
+    ],
+    secretFields: [
+      {
+        key: "community",
+        label: "SNMP community string",
+        placeholder: "public",
+        helpText:
+          "Most printers use \"public\" by default (their factory setting) unless you've locked it down yourself.",
+      },
+    ],
+  },
 ];
 
 export function getWidgetDefinition(type: WidgetTypeId): WidgetDefinition {

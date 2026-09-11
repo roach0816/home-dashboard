@@ -17,6 +17,7 @@ import { fetchUptimeKumaData } from "./uptimeKuma";
 import { fetchEnphaseData } from "./enphase";
 import { fetchNextcloudData } from "./nextcloud";
 import { fetchPingMonitorData } from "./pingMonitor";
+import { fetchPrinterData } from "./printer";
 
 /**
  * Dispatches to the right integration client based on widget type. Takes
@@ -61,5 +62,7 @@ export async function fetchWidgetData(widget: Widget, secrets: Record<string, st
       return fetchNextcloudData(widget.config, secrets);
     case "ping-monitor":
       return fetchPingMonitorData(widget.config);
+    case "printer-snmp":
+      return fetchPrinterData(widget.config, secrets);
   }
 }

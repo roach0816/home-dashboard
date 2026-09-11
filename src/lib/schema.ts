@@ -66,6 +66,12 @@ const pingMonitorConfigSchema = z.object({
   host: z.string().min(1).max(300),
   port: z.number().int().min(1).max(65535).default(443),
 });
+const printerConfigSchema = z.object({
+  label,
+  refreshSeconds,
+  host: z.string().min(1).max(300),
+  port: z.number().int().min(1).max(65535).default(161),
+});
 
 export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("tempest-weather"), config: weatherWidgetConfigSchema }),
@@ -86,6 +92,7 @@ export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("speedtest"), config: speedtestConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("nextcloud"), config: nextcloudConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("ping-monitor"), config: pingMonitorConfigSchema }),
+  z.object({ id: z.string().min(1), type: z.literal("printer-snmp"), config: printerConfigSchema }),
 ]);
 
 export const dashboardDataSchema = z.object({

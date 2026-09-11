@@ -115,6 +115,13 @@ export type PingMonitorConfig = BaseWidgetConfig & {
   port: number;
 };
 
+export type PrinterConfig = BaseWidgetConfig & {
+  /** IP or hostname — the printer's SNMP agent, almost always the same address as its web UI. */
+  host: string;
+  /** SNMP port, default 161. */
+  port: number;
+};
+
 export type Widget =
   | { id: string; type: "tempest-weather"; config: WeatherWidgetConfig }
   | { id: string; type: "home-assistant"; config: HomeAssistantConfig }
@@ -133,7 +140,8 @@ export type Widget =
   | { id: string; type: "enphase"; config: EnphaseConfig }
   | { id: string; type: "speedtest"; config: SpeedtestConfig }
   | { id: string; type: "nextcloud"; config: NextcloudConfig }
-  | { id: string; type: "ping-monitor"; config: PingMonitorConfig };
+  | { id: string; type: "ping-monitor"; config: PingMonitorConfig }
+  | { id: string; type: "printer-snmp"; config: PrinterConfig };
 
 export type WidgetTypeId = Widget["type"];
 
