@@ -39,7 +39,13 @@ function findContainerOf(categories: Category[], bookmarkId: string): string | u
   return categories.find((c) => c.bookmarks.some((b) => b.id === bookmarkId))?.id;
 }
 
-export default function Dashboard({ initialData }: { initialData: DashboardData }) {
+export default function Dashboard({
+  initialData,
+  version,
+}: {
+  initialData: DashboardData;
+  version: string;
+}) {
   const [categories, setCategories] = useState<Category[]>(initialData.categories);
   const [widgets, setWidgets] = useState<Widget[]>(initialData.widgets);
   const [title, setTitle] = useState(initialData.title);
@@ -394,6 +400,17 @@ export default function Dashboard({ initialData }: { initialData: DashboardData 
       {categories.length === 0 && !editing && (
         <p className="text-sm text-muted">No categories yet. Click Edit to add one.</p>
       )}
+
+      <footer className="mt-auto pt-8 text-center">
+        <a
+          href="https://github.com/roach0816/home-dashboard"
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs text-muted hover:text-foreground hover:underline"
+        >
+          Home Dashboard v{version}
+        </a>
+      </footer>
     </div>
   );
 }
