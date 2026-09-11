@@ -24,30 +24,46 @@ const COL_LEVEL = 9;
 
 type SupplyRow = Record<number, unknown>;
 
+function queryTable(host: string, port: number, community: string, version: 0 | 1) {
+  const session = snmp.createSession(host, community, { port, version, timeout: 5000, retries: 1 });
+  return new Promise<Record<string, SupplyRow>>((resolve, reject) => {
+    session.tableColumns(
+      SUPPLIES_TABLE_OID,
+      [String(COL_DESCRIPTION), String(COL_MAX_CAPACITY), String(COL_LEVEL)],
+      20,
+      (error, result) => {
+        session.close();
+        if (error) reject(error);
+        else resolve((result ?? {}) as Record<string, SupplyRow>);
+      },
+    );
+  });
+}
+
 export async function fetchPrinterData(
   config: PrinterConfig,
   secrets: Record<string, string>,
 ): Promise<PrinterData> {
   const community = secrets.community || "public";
-  const session = snmp.createSession(config.host, community, {
-    port: config.port || 161,
-    version: snmp.Version2c,
-    timeout: 5000,
-    retries: 1,
-  });
+  const port = config.port || 161;
 
   try {
-    const table = await new Promise<Record<string, SupplyRow>>((resolve, reject) => {
-      session.tableColumns(
-        SUPPLIES_TABLE_OID,
-        [String(COL_DESCRIPTION), String(COL_MAX_CAPACITY), String(COL_LEVEL)],
-        20,
-        (error, result) => {
-          if (error) reject(error);
-          else resolve((result ?? {}) as Record<string, SupplyRow>);
-        },
-      );
-    });
+    // Most printers speak SNMPv2c, which is more efficient (GETBULK), but
+    // plenty of office/label printers (e.g. older Canon imageCLASS units)
+    // only implement v1 and silently drop v2c requests rather than
+    // erroring, which looks identical to a network timeout. Try v2c first
+    // and fall back to v1 so both kinds of printers work without the user
+    // needing to know which protocol version their hardware supports.
+    let table: Record<string, SupplyRow>;
+    try {
+      table = await queryTable(config.host, port, community, snmp.Version2c);
+    } catch (err) {
+      if (err instanceof Error && err.name === "RequestTimedOutError") {
+        table = await queryTable(config.host, port, community, snmp.Version1);
+      } else {
+        throw err;
+      }
+    }
 
     const supplies: PrinterSupply[] = [];
     for (const row of Object.values(table)) {
@@ -75,7 +91,5 @@ export async function fetchPrinterData(
       throw new Error(`SNMP error: ${err.message}`);
     }
     throw new Error("Failed to query the printer over SNMP.");
-  } finally {
-    session.close();
   }
 }
