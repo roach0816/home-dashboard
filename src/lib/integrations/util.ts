@@ -1,17 +1,42 @@
 import "server-only";
 
-/** Turns opaque network/timeout errors into something a user can act on. */
+/**
+ * Turns opaque network/timeout errors into something a user can act on.
+ * Node's fetch wraps the real reason in `TypeError: fetch failed` with the
+ * actual cause (DNS failure, connection refused, bad TLS cert, ...) tucked
+ * away in `.cause` — surface that instead of a generic bucket message.
+ */
 export function describeError(err: unknown, fallback: string): string {
-  if (err instanceof Error) {
-    if (err.name === "TimeoutError" || /timeout/i.test(err.message)) {
-      return "Timed out reaching the server — check the URL and that it's reachable.";
-    }
-    if (err.message === "fetch failed" || /ENOTFOUND|ECONNREFUSED|EHOSTUNREACH/.test(err.message)) {
-      return "Could not reach the server — check the URL and network.";
-    }
-    return err.message;
+  if (!(err instanceof Error)) return fallback;
+
+  if (err.name === "TimeoutError" || /timeout/i.test(err.message)) {
+    return "Timed out reaching the server — check the URL and that it's reachable.";
   }
-  return fallback;
+
+  const cause = (err as { cause?: unknown }).cause;
+  const causeErr = cause instanceof Error ? cause : undefined;
+  const code = (causeErr as { code?: string } | undefined)?.code;
+  const causeMessage = causeErr?.message ?? "";
+
+  if (code === "ENOTFOUND" || code === "EAI_AGAIN" || /getaddrinfo/i.test(causeMessage)) {
+    return `Couldn't resolve that hostname (DNS lookup failed: ${code ?? causeMessage}). If it ends in ".local", that's often the cause — mDNS names usually don't resolve from inside a cluster pod. Try the IP address instead.`;
+  }
+  if (code === "ECONNREFUSED") {
+    return "Connection refused — check the port, and that the service is actually running there.";
+  }
+  if (code === "EHOSTUNREACH" || code === "ENETUNREACH") {
+    return "Host unreachable — check network routing/firewall rules between the cluster and that host.";
+  }
+  if (/certificate|SSL|TLS/i.test(causeMessage) || (code ?? "").includes("CERT")) {
+    return `TLS certificate error (${causeMessage || code}) — if this service uses a self-signed certificate, enable "Allow self-signed certificate" in the widget's settings.`;
+  }
+  if (causeMessage) {
+    return `Could not reach the server: ${causeMessage}`;
+  }
+  if (err.message === "fetch failed") {
+    return "Could not reach the server — check the URL and network.";
+  }
+  return err.message;
 }
 
 export function basicAuthHeader(username: string, password: string): string {
