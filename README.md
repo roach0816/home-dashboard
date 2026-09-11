@@ -130,7 +130,7 @@ there or your edits won't survive a container restart.
 ## Deploying to Kubernetes (K3s)
 
 Manifests are in [deploy/k8s](deploy/k8s) (namespace, PVC, Deployment,
-Service, an example Ingress) and are kustomize-ready:
+Service) and are kustomize-ready:
 
 ```bash
 kubectl apply -k deploy/k8s
@@ -140,12 +140,20 @@ Before applying:
 
 - Edit `deploy/k8s/pvc.yaml` if your cluster has no default `StorageClass`
   (e.g. set `storageClassName: local-path` for the K3s built-in one).
-- Edit `deploy/k8s/ingress.yaml` (host / ingress class / TLS) or delete it
-  and expose the Service however you normally do (LoadBalancer, Tailscale
-  operator, etc).
 - The Deployment runs a single replica with `strategy: Recreate`, since the
   bookmark data is a JSON file on a `ReadWriteOnce` volume — don't scale
   this beyond 1 replica.
+
+**Ingress/hostname is intentionally not part of this bundle.** Which
+hostname the dashboard answers to is cluster/environment config, not
+application code, so it isn't tracked in git (and doesn't leak your
+internal hostname into a public repo). Create it directly against the
+cluster instead — either in Rancher (**Service Discovery → Ingresses →
+Create**, namespace `home-dashboard`, backend Service `home-dashboard`
+port `80`) or via `kubectl apply -f` a filled-in copy of
+[deploy/k8s/ingress.example.yaml](deploy/k8s/ingress.example.yaml) that
+you keep outside git. See that file for the LAN-only and TLS/cert-manager
+notes.
 
 ### CI/CD
 
@@ -183,6 +191,10 @@ new image still needs *something* to bounce the pod (Fleet re-applying
 identical YAML won't restart a Deployment on its own) — either bump the
 image tag as part of your release process, or add a scheduled `kubectl
 rollout restart deployment/home-dashboard -n home-dashboard`.
+
+The bundle deliberately excludes the Ingress (see above) — add that once,
+directly in Rancher, after the Git Repo has created the `home-dashboard`
+namespace and Service.
 
 ## Editing
 

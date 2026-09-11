@@ -6,4 +6,6 @@ resources:
   - pvc.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
+# Ingress is deliberately NOT listed here — see ingress.example.yaml.
+# The public hostname is cluster/environment config, not application code,
+# so it's created directly in Rancher/kubectl rather than tracked in git.

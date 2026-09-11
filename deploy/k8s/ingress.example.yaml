@@ -1,0 +1,41 @@
+# Reference only — this file is NOT applied by the Fleet bundle (it's not
+# listed in kustomization.yaml). Ingress/hostname is cluster-specific
+# config, not application code, so create the real one either:
+#   - In Rancher: Service Discovery -> Ingresses -> Create, in the
+#     `home-dashboard` namespace, pointed at the `home-dashboard` Service
+#     on port 80; or
+#   - `kubectl apply -f` a copy of this file with YOUR_HOSTNAME filled in
+#     (kept outside git).
+#
+# LAN-only by design: this app has no login, so whatever hostname you pick
+# should only resolve inside your network (e.g. a DNS override in
+# Pi-hole/AdGuard Home/your router) — don't port-forward 80/443 to it.
+#
+# TLS uses cert-manager. Since the host isn't publicly reachable, the
+# ClusterIssuer must use a DNS-01 solver (e.g. Cloudflare, Route53) rather
+# than HTTP-01 — HTTP-01 requires the ACME server to reach you over the
+# public internet. Replace `letsencrypt-prod` with your actual
+# ClusterIssuer name (`kubectl get clusterissuer`).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: home-dashboard
+  namespace: home-dashboard
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: YOUR_HOSTNAME
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: home-dashboard
+                port:
+                  number: 80
+  tls:
+    - hosts: ["YOUR_HOSTNAME"]
+      secretName: home-dashboard-tls
