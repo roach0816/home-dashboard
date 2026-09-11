@@ -24,7 +24,7 @@ spec:
           # actually roll out: Fleet only re-applies a Deployment when its
           # manifest content changes, and ":latest" never changes as text
           # even when the image behind it does.
-          image: ghcr.io/roach0816/home-dashboard:debf6805cb6d9debd4ea6f670cd051ffa5a6d455
+          image: ghcr.io/roach0816/home-dashboard:63b1cc04d04e3473978871d6358e1f31cf711b9b
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
