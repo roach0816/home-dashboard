@@ -1,0 +1,25 @@
+# Example only. Adjust ingressClassName / host / TLS to match your cluster,
+# or delete this file and expose the Service another way (LoadBalancer, Tailscale, etc).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: home-dashboard
+  namespace: home-dashboard
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: dashboard.home.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: home-dashboard
+                port:
+                  number: 80
+  # tls:
+  #   - hosts: ["dashboard.home.arpa"]
+  #     secretName: home-dashboard-tls

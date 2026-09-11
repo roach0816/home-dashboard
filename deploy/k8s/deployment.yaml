@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: home-dashboard
+  namespace: home-dashboard
+  labels:
+    app: home-dashboard
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # single ReadWriteOnce volume backs the bookmark data, so avoid two pods mounting it at once
+  selector:
+    matchLabels:
+      app: home-dashboard
+  template:
+    metadata:
+      labels:
+        app: home-dashboard
+    spec:
+      containers:
+        - name: home-dashboard
+          image: ghcr.io/roach0816/home-dashboard:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATA_DIR
+              value: /app/data
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /api/healthz
+              port: 3000
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/healthz
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: home-dashboard-data
