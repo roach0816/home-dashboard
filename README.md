@@ -153,15 +153,36 @@ Before applying:
 builds and pushes the image to GHCR
 (`ghcr.io/<your-github-username>/home-dashboard`) on every push to `main`,
 tagged both `latest` and with the commit SHA. `deploy/k8s/deployment.yaml`
-currently points at `ghcr.io/roach0816/home-dashboard:latest` with
-`imagePullPolicy: Always` — the simplest setup is to have your cluster's
-existing CD mechanism (Flux, ArgoCD, Watchtower, a `kubectl rollout
-restart` cron, etc.) pick up new `latest` pushes. If your CD tool does
-GitOps image promotion by SHA tag instead, point it at the `:<sha>` tag
-this workflow also pushes.
+points at `ghcr.io/roach0816/home-dashboard:latest` with
+`imagePullPolicy: Always`, so any cluster-side mechanism that periodically
+redeploys (Rancher Continuous Delivery, Flux, ArgoCD, Watchtower, a
+`kubectl rollout restart` cron, ...) will pick up new pushes. If your CD
+tool does GitOps image promotion by SHA tag instead, point it at the
+`:<sha>` tag this workflow also pushes.
 
-Make the GHCR package public (or add an `imagePullSecrets` reference) so
-your cluster can pull it without extra auth.
+Make the GHCR package public (Package settings → Danger Zone → Change
+visibility, on the package's GitHub page) or add an `imagePullSecrets`
+reference so your cluster can pull it without extra auth.
+
+### Rancher Continuous Delivery (Fleet)
+
+[deploy/k8s/fleet.yaml](deploy/k8s/fleet.yaml) makes this directory a Fleet
+bundle. In Rancher: **Continuous Delivery → Git Repos → Add Git Repo**:
+
+- Repository URL: `https://github.com/roach0816/home-dashboard`
+- Branch: `main`
+- Paths: `deploy/k8s`
+- Target: pick the cluster(s) to deploy to
+
+Fleet applies everything under `deploy/k8s` as a Kustomize bundle and
+re-syncs on every push to `main` — no manual `kubectl apply` needed after
+the initial Git Repo is added. It does **not** rebuild the image; that's
+still the GitHub Actions workflow above. Since the Deployment uses
+`imagePullPolicy: Always` + the `latest` tag, a rollout that picks up a
+new image still needs *something* to bounce the pod (Fleet re-applying
+identical YAML won't restart a Deployment on its own) — either bump the
+image tag as part of your release process, or add a scheduled `kubectl
+rollout restart deployment/home-dashboard -n home-dashboard`.
 
 ## Editing
 

@@ -1,0 +1,10 @@
+# Rancher Continuous Delivery (Fleet) config for this bundle.
+# In Rancher: Continuous Delivery -> Git Repos -> Add Git Repo
+#   Repository URL: https://github.com/roach0816/home-dashboard
+#   Branch:          main
+#   Paths:           deploy/k8s
+# then pick which cluster(s) to target. Fleet will apply this directory as
+# a Kustomize bundle and keep it in sync with every push to main.
+defaultNamespace: home-dashboard
+kustomize:
+  dir: .
