@@ -19,8 +19,13 @@ spec:
     spec:
       containers:
         - name: home-dashboard
-          image: ghcr.io/roach0816/home-dashboard:latest
-          imagePullPolicy: Always
+          # Pinned to a commit SHA (not :latest) and kept in sync by CI — see
+          # .github/workflows/docker-publish.yml. This is what makes deploys
+          # actually roll out: Fleet only re-applies a Deployment when its
+          # manifest content changes, and ":latest" never changes as text
+          # even when the image behind it does.
+          image: ghcr.io/roach0816/home-dashboard:5080bc82c9b3462e481da49f1dda6b037cb5c18c
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
           env:

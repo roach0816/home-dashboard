@@ -258,13 +258,17 @@ kubectl get challenges -n home-dashboard
 kubectl describe challenge <name> -n home-dashboard
 ```
 
-**7. Keep it updated.** Fleet re-applies the bundle on every push, but the
-Deployment uses `imagePullPolicy: Always` + the `latest` tag — re-applying
-*identical* YAML doesn't bounce a running pod, so a new image push alone
-won't roll out automatically. Either add a scheduled
-`kubectl rollout restart deployment/home-dashboard -n home-dashboard`, or
-switch to SHA-tagged image promotion if you want Fleet's own sync to
-trigger the rollout.
+**7. Updates roll out automatically — no manual restart needed.** The
+Deployment is pinned to a commit SHA, not `:latest`. After
+`docker-publish.yml` builds and pushes an image, it also rewrites
+`deploy/k8s/deployment.yaml`'s image tag to that commit's SHA and commits
+that change back to `main` (as `github-actions[bot]`, tagged `[skip ci]`
+so it doesn't re-trigger itself). Fleet's normal polling (every ~1 minute)
+picks up that manifest change like any other commit and rolls the
+Deployment — because the YAML content actually changed this time, unlike
+re-applying the same `:latest` string. If you ever need to force a
+redeploy without a code change, `kubectl rollout restart
+deployment/home-dashboard -n home-dashboard` still works.
 
 ### Other ways to deploy
 
