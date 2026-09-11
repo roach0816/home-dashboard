@@ -81,11 +81,16 @@ async function fetchWanProviders(
       };
       const name = e?.configuration?.name || e?.configuration?.wan_networkgroup;
       if (!name) continue;
-      wans.push({
-        name,
-        ispName: e?.details?.service_provider?.name,
-        uptimePercent: e?.statistics?.uptime_percentage,
-      });
+
+      const ispName = e?.details?.service_provider?.name;
+      const uptimePercent = e?.statistics?.uptime_percentage;
+      // Controllers report every WAN-capable port the hardware has, even
+      // ones that were never actually set up. An unconfigured port has no
+      // known ISP and no real uptime data (UniFi uses -1 as a "no data"
+      // sentinel here), unlike a real WAN that's simply down right now.
+      if (!ispName && (uptimePercent == null || uptimePercent < 0)) continue;
+
+      wans.push({ name, ispName, uptimePercent });
     }
     return wans;
   } catch {
