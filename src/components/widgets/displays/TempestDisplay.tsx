@@ -9,7 +9,7 @@ import type { TempestForecast } from "@/lib/tempest";
 export default function TempestDisplay({ widget }: { widget: Extract<Widget, { type: "tempest-weather" }> }) {
   const { config } = widget;
   const { data, error } = useWidgetData<TempestForecast>(widget.id);
-  const label = config.label || data?.locationName || "Tempest station";
+  const label = config.label || data?.cityState || data?.locationName || "Tempest station";
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

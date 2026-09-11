@@ -63,7 +63,15 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
       { key: "baseUrl", label: "Base URL", type: "url", placeholder: "https://proxmox.local:8006" },
       insecureTlsField,
     ],
-    secretFields: [{ key: "apiToken", label: "API token", placeholder: "user@realm!tokenid=secret", helpText: "Datacenter → Permissions → API Tokens." }],
+    secretFields: [
+      {
+        key: "apiToken",
+        label: "API token",
+        placeholder: "root@pam!mytoken=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        helpText:
+          "Datacenter → Permissions → API Tokens. Use the exact Token ID Proxmox shows you (the \"mytoken\" part is whatever name you gave it, not the literal word) followed by =, then the secret.",
+      },
+    ],
   },
   {
     type: "kubernetes",

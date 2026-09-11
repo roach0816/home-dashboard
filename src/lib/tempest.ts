@@ -25,6 +25,8 @@ export type TempestDaily = {
 
 export type TempestForecast = {
   locationName: string;
+  /** "City, ST" from reverse-geocoding the station's coordinates — undefined if that lookup failed. */
+  cityState?: string;
   unit: "fahrenheit" | "celsius";
   current: TempestCurrent;
   daily: TempestDaily[];
@@ -57,6 +59,29 @@ async function tempestFetch(token: string, path: string, query: string): Promise
   return data;
 }
 
+/** Best-effort reverse geocode of a station's coordinates to "City, ST". Never throws. */
+async function reverseGeocodeCityState(latitude: number, longitude: number): Promise<string | undefined> {
+  try {
+    const res = await integrationFetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
+      { cache: "no-store", timeoutMs: 5000 },
+    );
+    if (!res.ok) return undefined;
+    const body = (await res.json()) as {
+      city?: string;
+      locality?: string;
+      principalSubdivisionCode?: string;
+      principalSubdivision?: string;
+    };
+    const city = body.city || body.locality;
+    const state = body.principalSubdivisionCode?.split("-")[1] || body.principalSubdivision;
+    if (city && state) return `${city}, ${state}`;
+    return city || state || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function fetchBetterForecast(
   token: string,
   stationId: number,
@@ -75,8 +100,15 @@ export async function fetchBetterForecast(
   const forecast = (data.forecast ?? {}) as Record<string, unknown>;
   const dailyRaw = (forecast.daily ?? []) as Array<Record<string, unknown>>;
 
+  const latitude = Number(data.latitude);
+  const longitude = Number(data.longitude);
+  const cityState = Number.isFinite(latitude) && Number.isFinite(longitude)
+    ? await reverseGeocodeCityState(latitude, longitude)
+    : undefined;
+
   return {
     locationName: (data.location_name as string) || "Weather station",
+    cityState,
     unit,
     current: {
       time: Number(cc.time),

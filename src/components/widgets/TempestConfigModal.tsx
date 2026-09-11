@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Modal from "../Modal";
+import PasswordInput from "./PasswordInput";
 import type { WeatherDisplayMode, WeatherWidgetConfig } from "@/lib/types";
 
 type Station = { id: number; name: string };
@@ -91,14 +92,13 @@ export default function TempestConfigModal({
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">Tempest API token</label>
           <div className="flex gap-2">
-            <input
-              type="password"
-              autoComplete="off"
-              value={tokenDraft}
-              onChange={(e) => setTokenDraft(e.target.value)}
-              placeholder={tokenConfigured ? "•••••••••••• (configured)" : "Paste your token"}
-              className="min-w-0 flex-1 rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
-            />
+            <div className="min-w-0 flex-1">
+              <PasswordInput
+                value={tokenDraft}
+                onChange={setTokenDraft}
+                placeholder={tokenConfigured ? "•••••••••••• (configured)" : "Paste your token"}
+              />
+            </div>
             <button
               type="button"
               disabled={!tokenDraft.trim() || loadingStations}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Modal from "../Modal";
+import PasswordInput from "./PasswordInput";
 import type { WidgetDefinition } from "@/lib/widgets/registry";
 
 export default function GenericWidgetConfigModal({
@@ -20,7 +21,17 @@ export default function GenericWidgetConfigModal({
   const [configValues, setConfigValues] = useState<Record<string, string | number | boolean>>(() => {
     const values: Record<string, string | number | boolean> = { label: (initialConfig.label as string) ?? "" };
     for (const field of definition.configFields) {
-      values[field.key] = (initialConfig[field.key] as string | number | boolean) ?? field.defaultValue ?? "";
+      const existing = initialConfig[field.key];
+      if (existing !== undefined) {
+        values[field.key] = existing as string | number | boolean;
+      } else if (field.defaultValue !== undefined) {
+        values[field.key] = field.defaultValue;
+      } else {
+        // A checkbox with no value must default to false, not "" — an empty
+        // string fails the server's boolean schema check and always shows
+        // "Invalid configuration" regardless of what else was entered.
+        values[field.key] = field.type === "checkbox" ? false : "";
+      }
     }
     return values;
   });
@@ -130,13 +141,10 @@ export default function GenericWidgetConfigModal({
             {definition.secretFields.map((field) => (
               <div key={field.key}>
                 <label className="mb-1 block text-xs font-medium text-muted">{field.label}</label>
-                <input
-                  type="password"
-                  autoComplete="off"
+                <PasswordInput
                   value={secretDrafts[field.key] ?? ""}
-                  onChange={(e) => setSecretDrafts((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  onChange={(value) => setSecretDrafts((prev) => ({ ...prev, [field.key]: value }))}
                   placeholder={secretStatus[field.key] ? "•••••••••••• (configured)" : field.placeholder}
-                  className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
                 />
                 {field.helpText && <p className="mt-0.5 text-[11px] text-muted">{field.helpText}</p>}
               </div>
