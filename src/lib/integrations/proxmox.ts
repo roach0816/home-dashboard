@@ -68,7 +68,10 @@ export async function fetchProxmoxData(
   const diskUsedBytes = validStatuses.reduce((sum, s) => sum + (s.rootfs?.used ?? 0), 0);
   const diskTotalBytes = validStatuses.reduce((sum, s) => sum + (s.rootfs?.total ?? 0), 0);
 
-  const resourcesRes = await integrationFetch(`${base}/api2/json/cluster/resources?type=vm`, {
+  // No generic "vm" filter value exists on this endpoint — the real type
+  // values are qemu/lxc/node/storage/sdn, so fetch everything and filter
+  // client-side (below) rather than filtering (to nothing) server-side.
+  const resourcesRes = await integrationFetch(`${base}/api2/json/cluster/resources`, {
     headers,
     insecure,
     cache: "no-store",
