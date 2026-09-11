@@ -127,74 +127,125 @@ docker run -p 3000:3000 -v home-dashboard-data:/app/data home-dashboard
 The `/app/data` volume is where `dashboard.json` lives — mount a volume
 there or your edits won't survive a container restart.
 
-## Deploying to Kubernetes (K3s)
+## Deploying via Rancher Continuous Delivery
 
-Manifests are in [deploy/k8s](deploy/k8s) (namespace, PVC, Deployment,
-Service) and are kustomize-ready:
+This is the primary supported path: Rancher's Continuous Delivery
+(built on [Fleet](https://fleet.rancher.io)) tracks
+[deploy/k8s](deploy/k8s) in this repo and keeps the namespace, PVC,
+Deployment, and Service in sync with `main`. The Ingress/hostname is
+deliberately **not** part of that bundle (see step 4) — it's
+cluster/environment config, not application code, so it isn't tracked in
+git.
+
+**1. Build the image.**
+[.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml)
+already builds and pushes to `ghcr.io/roach0816/home-dashboard` on every
+push to `main`, tagged `latest` and with the commit SHA. Nothing to do
+here unless you forked the repo, in which case it'll publish to
+`ghcr.io/<your-github-username>/home-dashboard` instead.
+
+**2. Make the image pullable.** On the package's GitHub page: **Package
+settings → Danger Zone → Change visibility → Public**. (Alternative: keep
+it private and add an `imagePullSecrets` reference to
+`deploy/k8s/deployment.yaml` instead.)
+
+**3. Add the Git Repo in Rancher.** *Continuous Delivery → Git Repos → Add
+Git Repo*:
+
+| Field | Value |
+| --- | --- |
+| Repository URL | `https://github.com/roach0816/home-dashboard` |
+| Branch | `main` |
+| Paths | `deploy/k8s` |
+| Target clusters | *(your environment — pick the cluster(s) to deploy to)* |
+
+Fleet applies everything under `deploy/k8s` as a Kustomize bundle
+(`deploy/k8s/fleet.yaml` is the bundle config) and re-syncs on every push
+to `main` — no manual `kubectl apply` needed afterward. Confirm it landed:
+
+```bash
+kubectl get all -n home-dashboard
+```
+
+**4. Create the Ingress.** *(environment-specific — this is the part
+that's genuinely yours to fill in: hostname, ingress class, and which
+cert-manager `ClusterIssuer` you run.)* Either use Rancher's UI (**Service
+Discovery → Ingresses → Create**, namespace `home-dashboard`, backend
+Service `home-dashboard` port `80`, and make sure to set **Path Type** to
+`Prefix` — Rancher's form doesn't default it, and Kubernetes rejects an
+Ingress without one), or apply this directly:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: home-dashboard
+  namespace: home-dashboard
+  annotations:
+    cert-manager.io/cluster-issuer: <YOUR_CLUSTER_ISSUER>   # kubectl get clusterissuer
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: <YOUR_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: home-dashboard
+                port:
+                  number: 80
+  tls:
+    - hosts: ["<YOUR_HOSTNAME>"]
+      secretName: home-dashboard-tls
+```
+
+A filled-in-able copy of this also lives at
+[deploy/k8s/ingress.example.yaml](deploy/k8s/ingress.example.yaml) — keep
+your real version out of git (a local copy, or applied straight from
+Rancher's UI, both work).
+
+**5. Point DNS at it — internally only.** This app has no login, so
+`<YOUR_HOSTNAME>` should only resolve inside your network (a DNS override
+in Pi-hole/AdGuard Home/your router pointed at the Ingress's address) —
+don't port-forward 80/443 to it. If your `ClusterIssuer` uses a DNS-01
+solver (Cloudflare, Route53, ...) rather than HTTP-01, certificate
+issuance doesn't need the host to be publicly reachable at all, so this
+works even though nothing about it is internet-facing.
+
+**6. Verify the certificate issued:**
+
+```bash
+kubectl get certificate -n home-dashboard
+kubectl describe certificate home-dashboard-tls -n home-dashboard
+```
+
+**7. Keep it updated.** Fleet re-applies the bundle on every push, but the
+Deployment uses `imagePullPolicy: Always` + the `latest` tag — re-applying
+*identical* YAML doesn't bounce a running pod, so a new image push alone
+won't roll out automatically. Either add a scheduled
+`kubectl rollout restart deployment/home-dashboard -n home-dashboard`, or
+switch to SHA-tagged image promotion if you want Fleet's own sync to
+trigger the rollout.
+
+### Other ways to deploy
+
+Not using Rancher? The same manifests work with plain kubectl:
 
 ```bash
 kubectl apply -k deploy/k8s
 ```
 
-Before applying:
-
-- Edit `deploy/k8s/pvc.yaml` if your cluster has no default `StorageClass`
-  (e.g. set `storageClassName: local-path` for the K3s built-in one).
-- The Deployment runs a single replica with `strategy: Recreate`, since the
-  bookmark data is a JSON file on a `ReadWriteOnce` volume — don't scale
-  this beyond 1 replica.
-
-**Ingress/hostname is intentionally not part of this bundle.** Which
-hostname the dashboard answers to is cluster/environment config, not
-application code, so it isn't tracked in git (and doesn't leak your
-internal hostname into a public repo). Create it directly against the
-cluster instead — either in Rancher (**Service Discovery → Ingresses →
-Create**, namespace `home-dashboard`, backend Service `home-dashboard`
-port `80`) or via `kubectl apply -f` a filled-in copy of
-[deploy/k8s/ingress.example.yaml](deploy/k8s/ingress.example.yaml) that
-you keep outside git. See that file for the LAN-only and TLS/cert-manager
-notes.
-
-### CI/CD
-
-[.github/workflows/docker-publish.yml](.github/workflows/docker-publish.yml)
-builds and pushes the image to GHCR
-(`ghcr.io/<your-github-username>/home-dashboard`) on every push to `main`,
-tagged both `latest` and with the commit SHA. `deploy/k8s/deployment.yaml`
-points at `ghcr.io/roach0816/home-dashboard:latest` with
-`imagePullPolicy: Always`, so any cluster-side mechanism that periodically
-redeploys (Rancher Continuous Delivery, Flux, ArgoCD, Watchtower, a
-`kubectl rollout restart` cron, ...) will pick up new pushes. If your CD
-tool does GitOps image promotion by SHA tag instead, point it at the
-`:<sha>` tag this workflow also pushes.
-
-Make the GHCR package public (Package settings → Danger Zone → Change
-visibility, on the package's GitHub page) or add an `imagePullSecrets`
-reference so your cluster can pull it without extra auth.
-
-### Rancher Continuous Delivery (Fleet)
-
-[deploy/k8s/fleet.yaml](deploy/k8s/fleet.yaml) makes this directory a Fleet
-bundle. In Rancher: **Continuous Delivery → Git Repos → Add Git Repo**:
-
-- Repository URL: `https://github.com/roach0816/home-dashboard`
-- Branch: `main`
-- Paths: `deploy/k8s`
-- Target: pick the cluster(s) to deploy to
-
-Fleet applies everything under `deploy/k8s` as a Kustomize bundle and
-re-syncs on every push to `main` — no manual `kubectl apply` needed after
-the initial Git Repo is added. It does **not** rebuild the image; that's
-still the GitHub Actions workflow above. Since the Deployment uses
-`imagePullPolicy: Always` + the `latest` tag, a rollout that picks up a
-new image still needs *something* to bounce the pod (Fleet re-applying
-identical YAML won't restart a Deployment on its own) — either bump the
-image tag as part of your release process, or add a scheduled `kubectl
-rollout restart deployment/home-dashboard -n home-dashboard`.
-
-The bundle deliberately excludes the Ingress (see above) — add that once,
-directly in Rancher, after the Git Repo has created the `home-dashboard`
-namespace and Service.
+Steps 2, 4, 5, and 6 above still apply the same way — just skip the "Add
+Git Repo" step and re-run `kubectl apply -k deploy/k8s` yourself after
+each change (or wire up your own CD tool: Flux, ArgoCD, Watchtower, etc.
+all work fine against this Kustomize bundle). Edit `deploy/k8s/pvc.yaml`
+first if your cluster has no default `StorageClass` (K3s ships
+`local-path` as the default, so this is usually a no-op). The Deployment
+runs a single replica with `strategy: Recreate`, since the dashboard data
+is a JSON file on a `ReadWriteOnce` volume — don't scale this beyond 1
+replica.
 
 ## Editing
 
