@@ -22,15 +22,16 @@ export default function UnifiDisplay({
   const wanOk = data.wanStatus === "ok";
   const allDevicesOnline = data.devicesOnline === data.deviceCount;
 
-  const statItems: Array<{ value: string | number; caption: string }> = [
-    { value: data.wirelessClients, caption: "WLAN clients" },
-    { value: data.wiredClients, caption: "LAN clients" },
-  ];
-  if (!compact) statItems.push({ value: `${data.devicesOnline}/${data.deviceCount}`, caption: "devices online" });
-
   return (
     <WidgetFrame label={label} compact={compact}>
-      <StatRow compact={compact} items={statItems} />
+      <StatRow
+        compact={compact}
+        items={[
+          { value: data.wirelessClients, caption: "WLAN clients" },
+          { value: data.wiredClients, caption: "LAN clients" },
+          { value: `${data.devicesOnline}/${data.deviceCount}`, caption: "devices online" },
+        ]}
+      />
       {!compact && data.deviceCount > 0 && !allDevicesOnline && (
         <StatusLine text={`${data.deviceCount - data.devicesOnline} UniFi device(s) offline`} tone="bad" />
       )}

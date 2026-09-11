@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+
+// Must match the CSS animation-duration for .animate-modal-panel-out in globals.css.
+const CLOSE_ANIMATION_MS = 150;
 
 export default function Modal({
   title,
@@ -14,28 +17,41 @@ export default function Modal({
   children: ReactNode;
   widthClass?: string;
 }) {
+  const [closing, setClosing] = useState(false);
+
+  function requestClose() {
+    if (closing) return;
+    setClosing(true);
+    setTimeout(onClose, CLOSE_ANIMATION_MS);
+  }
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") requestClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [closing]);
 
   return (
     <div
-      className="animate-modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={onClose}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 ${
+        closing ? "animate-modal-backdrop-out" : "animate-modal-backdrop"
+      }`}
+      onClick={requestClose}
     >
       <div
-        className={`animate-modal-panel flex max-h-[85vh] w-full ${widthClass} flex-col overflow-hidden rounded-xl border border-border bg-surface-1 shadow-xl`}
+        className={`flex max-h-[85vh] w-full ${widthClass} flex-col overflow-hidden rounded-xl border border-border bg-surface-1 shadow-xl ${
+          closing ? "animate-modal-panel-out" : "animate-modal-panel"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h2 className="text-sm font-semibold text-foreground">{title}</h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Close"
             className="rounded p-1 text-muted hover:bg-surface-3 hover:text-foreground"
           >

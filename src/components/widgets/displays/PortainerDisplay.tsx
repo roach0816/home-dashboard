@@ -18,15 +18,16 @@ export default function PortainerDisplay({
   if (error) return <WidgetError label={label} error={error} compact={compact} />;
   if (!data) return <WidgetLoading label={label} compact={compact} />;
 
-  const items = [
-    { value: data.runningContainers, caption: "running" },
-    { value: data.stoppedContainers, caption: "stopped" },
-  ];
-  if (!compact) items.push({ value: data.environmentCount, caption: "environments" });
-
   return (
     <WidgetFrame label={label} compact={compact}>
-      <StatRow compact={compact} items={items} />
+      <StatRow
+        compact={compact}
+        items={[
+          { value: data.runningContainers, caption: "running" },
+          { value: data.stoppedContainers, caption: "stopped" },
+          { value: data.environmentCount, caption: "environments" },
+        ]}
+      />
     </WidgetFrame>
   );
 }

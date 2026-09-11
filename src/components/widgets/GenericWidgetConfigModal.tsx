@@ -135,23 +135,31 @@ export default function GenericWidgetConfigModal({
         )}
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Card size</label>
+          <label className="mb-1 block text-xs font-medium text-muted">Card height</label>
           <div className="flex gap-2">
-            {(["full", "half"] as const).map((size) => (
+            {(
+              [
+                { value: "full", label: "Full" },
+                { value: "half", label: "Half" },
+              ] as const
+            ).map((opt) => (
               <button
-                key={size}
+                key={opt.value}
                 type="button"
-                onClick={() => setField("cardSize", size)}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium capitalize ${
-                  (configValues.cardSize || "full") === size
+                onClick={() => setField("cardSize", opt.value)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium ${
+                  (configValues.cardSize || "full") === opt.value
                     ? "bg-accent text-white"
                     : "border border-border text-muted hover:text-foreground"
                 }`}
               >
-                {size}
+                {opt.label}
               </button>
             ))}
           </div>
+          <p className="mt-0.5 text-[11px] text-muted">
+            Same width, less vertical space — Half shows a condensed version of the data.
+          </p>
         </div>
 
         {definition.linkField && (

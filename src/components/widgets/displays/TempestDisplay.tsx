@@ -23,7 +23,6 @@ export default function TempestDisplay({
   const unitLabel = config.unit === "fahrenheit" ? "°F" : "°C";
   const showCurrent = config.display !== "forecast";
   const showForecast = config.display !== "current";
-  const forecastDays = compact ? data.daily.slice(0, 3) : data.daily;
 
   return (
     <div className={`flex flex-col gap-3 ${compact ? "p-2.5" : "p-3.5"}`}>
@@ -62,9 +61,9 @@ export default function TempestDisplay({
         </>
       )}
 
-      {showForecast && forecastDays.length > 0 && (
+      {showForecast && data.daily.length > 0 && (
         <div className={`flex justify-between gap-1 ${showCurrent ? "border-t border-border pt-2.5" : ""}`}>
-          {forecastDays.map((day) => {
+          {data.daily.map((day) => {
             const weekday = new Date(`${day.date}T12:00:00`).toLocaleDateString(undefined, {
               weekday: "short",
             });

@@ -41,7 +41,7 @@ export function StatRow({
   compact?: boolean;
 }) {
   return (
-    <div className={`flex ${compact ? "flex-col gap-1" : "gap-4"}`}>
+    <div className={`flex ${compact ? "gap-3" : "gap-4"}`}>
       {items.map((item, i) => (
         <div key={i} className="flex flex-col">
           <span className={compact ? "text-lg font-semibold text-foreground" : "text-2xl font-semibold text-foreground"}>

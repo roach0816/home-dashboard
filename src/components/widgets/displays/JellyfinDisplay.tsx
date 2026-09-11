@@ -19,10 +19,8 @@ export default function JellyfinDisplay({
   if (!data) return <WidgetLoading label={label} compact={compact} />;
 
   const items = [{ value: data.activeSessions, caption: "now playing" }];
-  if (!compact) {
-    if (data.movieCount != null) items.push({ value: data.movieCount, caption: "movies" });
-    if (data.episodeCount != null) items.push({ value: data.episodeCount, caption: "episodes" });
-  }
+  if (data.movieCount != null) items.push({ value: data.movieCount, caption: "movies" });
+  if (data.episodeCount != null) items.push({ value: data.episodeCount, caption: "episodes" });
 
   return (
     <WidgetFrame label={label} compact={compact}>

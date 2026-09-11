@@ -117,9 +117,7 @@ export default function WidgetCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`w-full flex-1 rounded-xl border border-border bg-surface-1 shadow-sm sm:flex-none ${
-        compact ? "min-w-[128px] sm:w-36" : "min-w-[240px] sm:w-72"
-      }`}
+      className="w-full min-w-[240px] flex-1 rounded-xl border border-border bg-surface-1 shadow-sm sm:w-72 sm:flex-none"
     >
       {editing && (
         <div className="flex items-center justify-between border-b border-border px-3 py-1.5">

@@ -18,15 +18,16 @@ export default function UptimeKumaDisplay({
   if (error) return <WidgetError label={label} error={error} compact={compact} />;
   if (!data) return <WidgetLoading label={label} compact={compact} />;
 
-  const items = [
-    { value: data.up, caption: "up" },
-    { value: data.down, caption: "down" },
-  ];
-  if (!compact) items.push({ value: data.pending, caption: "pending" });
-
   return (
     <WidgetFrame label={label} compact={compact}>
-      <StatRow compact={compact} items={items} />
+      <StatRow
+        compact={compact}
+        items={[
+          { value: data.up, caption: "up" },
+          { value: data.down, caption: "down" },
+          { value: data.pending, caption: "pending" },
+        ]}
+      />
     </WidgetFrame>
   );
 }

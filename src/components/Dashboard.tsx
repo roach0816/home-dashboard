@@ -333,7 +333,7 @@ export default function Dashboard({
       >
         {(widgets.length > 0 || editing) && (
           <SortableContext items={widgets.map((w) => `wid:${w.id}`)} strategy={rectSortingStrategy}>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap items-start gap-4">
               {widgets.map((widget) => (
                 <WidgetCard
                   key={widget.id}
