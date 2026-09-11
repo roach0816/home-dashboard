@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow } from "../primitives";
 
 export default function UptimeKumaDisplay({ widget }: { widget: Extract<Widget, { type: "uptime-kuma" }> }) {
   const label = widget.config.label || "Uptime Kuma";
-  const { data, error } = useWidgetData<UptimeKumaData>(widget.id);
+  const { data, error } = useWidgetData<UptimeKumaData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
 
 export default function KubernetesDisplay({ widget }: { widget: Extract<Widget, { type: "kubernetes" }> }) {
   const label = widget.config.label || "Kubernetes";
-  const { data, error } = useWidgetData<KubernetesData>(widget.id);
+  const { data, error } = useWidgetData<KubernetesData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow } from "../primitives";
 
 export default function HomeAssistantDisplay({ widget }: { widget: Extract<Widget, { type: "home-assistant" }> }) {
   const label = widget.config.label || "Home Assistant";
-  const { data, error } = useWidgetData<HomeAssistantData>(widget.id);
+  const { data, error } = useWidgetData<HomeAssistantData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

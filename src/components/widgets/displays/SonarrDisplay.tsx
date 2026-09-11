@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow } from "../primitives";
 
 export default function SonarrDisplay({ widget }: { widget: Extract<Widget, { type: "sonarr" }> }) {
   const label = widget.config.label || "Sonarr";
-  const { data, error } = useWidgetData<ArrData>(widget.id);
+  const { data, error } = useWidgetData<ArrData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

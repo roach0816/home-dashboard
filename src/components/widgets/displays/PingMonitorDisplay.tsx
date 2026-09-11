@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatusLine } from "../primitives";
 
 export default function PingMonitorDisplay({ widget }: { widget: Extract<Widget, { type: "ping-monitor" }> }) {
   const label = widget.config.label || widget.config.host;
-  const { data, error } = useWidgetData<PingMonitorData>(widget.id, 60 * 1000);
+  const { data, error } = useWidgetData<PingMonitorData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
 
 export default function UnifiDisplay({ widget }: { widget: Extract<Widget, { type: "unifi" }> }) {
   const label = widget.config.label || "UniFi Network";
-  const { data, error } = useWidgetData<UnifiData>(widget.id);
+  const { data, error } = useWidgetData<UnifiData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

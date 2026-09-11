@@ -26,6 +26,8 @@ export type Category = {
 
 export type BaseWidgetConfig = {
   label?: string;
+  /** How often to poll for new data. Ignored by widgets that don't auto-refresh (e.g. the speed test). */
+  refreshSeconds?: number;
 };
 
 export type WeatherDisplayMode = "full" | "current" | "forecast";

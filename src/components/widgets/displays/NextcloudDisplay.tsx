@@ -8,7 +8,7 @@ import { WidgetLoading, WidgetError, StatRow } from "../primitives";
 
 export default function NextcloudDisplay({ widget }: { widget: Extract<Widget, { type: "nextcloud" }> }) {
   const label = widget.config.label || "Nextcloud";
-  const { data, error } = useWidgetData<NextcloudData>(widget.id);
+  const { data, error } = useWidgetData<NextcloudData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

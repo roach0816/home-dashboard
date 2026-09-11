@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
 
 export default function PiholeDisplay({ widget }: { widget: Extract<Widget, { type: "pihole" }> }) {
   const label = widget.config.label || "Pi-hole";
-  const { data, error } = useWidgetData<PiholeData>(widget.id);
+  const { data, error } = useWidgetData<PiholeData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

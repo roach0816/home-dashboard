@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow } from "../primitives";
 
 export default function PortainerDisplay({ widget }: { widget: Extract<Widget, { type: "portainer" }> }) {
   const label = widget.config.label || "Portainer";
-  const { data, error } = useWidgetData<PortainerData>(widget.id);
+  const { data, error } = useWidgetData<PortainerData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

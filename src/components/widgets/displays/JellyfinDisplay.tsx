@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow } from "../primitives";
 
 export default function JellyfinDisplay({ widget }: { widget: Extract<Widget, { type: "jellyfin" }> }) {
   const label = widget.config.label || "Jellyfin";
-  const { data, error } = useWidgetData<JellyfinData>(widget.id, 60 * 1000);
+  const { data, error } = useWidgetData<JellyfinData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

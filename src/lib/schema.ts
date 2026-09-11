@@ -17,33 +17,52 @@ export const categorySchema = z.object({
 const label = z.string().max(200).optional();
 const baseUrl = z.string().min(1).max(500);
 const insecureTls = z.boolean().optional();
+const refreshSeconds = z.number().int().min(5).max(3600).optional();
 
 const weatherWidgetConfigSchema = z.object({
   label,
+  refreshSeconds,
   stationId: z.number().int().positive().optional(),
   unit: z.enum(["fahrenheit", "celsius"]).default("fahrenheit"),
   display: z.enum(["full", "current", "forecast"]).default("full"),
   forecastDays: z.number().int().min(1).max(10).default(4),
 });
 
-const homeAssistantConfigSchema = z.object({ label, baseUrl, insecureTls });
-const proxmoxConfigSchema = z.object({ label, baseUrl, insecureTls });
-const kubernetesConfigSchema = z.object({ label, apiUrl: baseUrl, insecureTls });
-const adguardConfigSchema = z.object({ label, baseUrl });
-const unifiConfigSchema = z.object({ label, baseUrl, site: z.string().min(1).max(100).default("default"), insecureTls });
-const piholeConfigSchema = z.object({ label, baseUrl });
-const portainerConfigSchema = z.object({ label, baseUrl, insecureTls });
-const plexConfigSchema = z.object({ label, baseUrl });
-const jellyfinConfigSchema = z.object({ label, baseUrl });
-const sonarrConfigSchema = z.object({ label, baseUrl, calendarDays: z.number().int().min(1).max(30).default(7) });
-const radarrConfigSchema = z.object({ label, baseUrl, calendarDays: z.number().int().min(1).max(30).default(7) });
-const truenasConfigSchema = z.object({ label, baseUrl, insecureTls });
-const uptimeKumaConfigSchema = z.object({ label, baseUrl });
-const enphaseConfigSchema = z.object({ label, baseUrl });
+const homeAssistantConfigSchema = z.object({ label, refreshSeconds, baseUrl, insecureTls });
+const proxmoxConfigSchema = z.object({ label, refreshSeconds, baseUrl, insecureTls });
+const kubernetesConfigSchema = z.object({ label, refreshSeconds, apiUrl: baseUrl, insecureTls });
+const adguardConfigSchema = z.object({ label, refreshSeconds, baseUrl });
+const unifiConfigSchema = z.object({
+  label,
+  refreshSeconds,
+  baseUrl,
+  site: z.string().min(1).max(100).default("default"),
+  insecureTls,
+});
+const piholeConfigSchema = z.object({ label, refreshSeconds, baseUrl });
+const portainerConfigSchema = z.object({ label, refreshSeconds, baseUrl, insecureTls });
+const plexConfigSchema = z.object({ label, refreshSeconds, baseUrl });
+const jellyfinConfigSchema = z.object({ label, refreshSeconds, baseUrl });
+const sonarrConfigSchema = z.object({
+  label,
+  refreshSeconds,
+  baseUrl,
+  calendarDays: z.number().int().min(1).max(30).default(7),
+});
+const radarrConfigSchema = z.object({
+  label,
+  refreshSeconds,
+  baseUrl,
+  calendarDays: z.number().int().min(1).max(30).default(7),
+});
+const truenasConfigSchema = z.object({ label, refreshSeconds, baseUrl, insecureTls });
+const uptimeKumaConfigSchema = z.object({ label, refreshSeconds, baseUrl });
+const enphaseConfigSchema = z.object({ label, refreshSeconds, baseUrl });
 const speedtestConfigSchema = z.object({ label });
-const nextcloudConfigSchema = z.object({ label, baseUrl });
+const nextcloudConfigSchema = z.object({ label, refreshSeconds, baseUrl });
 const pingMonitorConfigSchema = z.object({
   label,
+  refreshSeconds,
   host: z.string().min(1).max(300),
   port: z.number().int().min(1).max(65535).default(443),
 });

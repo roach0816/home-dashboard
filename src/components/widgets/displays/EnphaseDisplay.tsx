@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow } from "../primitives";
 
 export default function EnphaseDisplay({ widget }: { widget: Extract<Widget, { type: "enphase" }> }) {
   const label = widget.config.label || "Enphase Solar";
-  const { data, error } = useWidgetData<EnphaseData>(widget.id);
+  const { data, error } = useWidgetData<EnphaseData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

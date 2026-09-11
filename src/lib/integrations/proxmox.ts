@@ -7,7 +7,19 @@ export type ProxmoxData = {
   nodeCount: number;
   avgCpuPercent: number;
   memUsedPercent: number;
-  runningGuests: number;
+  memUsedBytes: number;
+  memTotalBytes: number;
+  diskUsedPercent: number;
+  vmsRunning: number;
+  vmsTotal: number;
+  ctsRunning: number;
+  ctsTotal: number;
+};
+
+type NodeStatus = {
+  cpu?: number;
+  memory?: { total?: number; used?: number };
+  rootfs?: { total?: number; used?: number };
 };
 
 export async function fetchProxmoxData(
@@ -19,33 +31,66 @@ export async function fetchProxmoxData(
 
   const base = config.baseUrl.replace(/\/$/, "");
   const headers = { Authorization: `PVEAPIToken=${apiToken}` };
+  const insecure = config.insecureTls;
 
-  const nodesRes = await integrationFetch(`${base}/api2/json/nodes`, {
-    headers,
-    insecure: config.insecureTls,
-    cache: "no-store",
-  });
+  const nodesRes = await integrationFetch(`${base}/api2/json/nodes`, { headers, insecure, cache: "no-store" });
   await assertOk(nodesRes, "Proxmox");
-  const nodesBody = (await nodesRes.json()) as {
-    data: Array<{ cpu: number; maxmem: number; mem: number; status: string }>;
-  };
+  const nodesBody = (await nodesRes.json()) as { data: Array<{ node: string; status: string }> };
   const nodes = nodesBody.data ?? [];
   const onlineNodes = nodes.filter((n) => n.status === "online");
-  const avgCpuPercent = onlineNodes.length
-    ? (onlineNodes.reduce((sum, n) => sum + (n.cpu ?? 0), 0) / onlineNodes.length) * 100
+
+  // The /nodes list's cpu/mem fields are frequently stale or zero; the
+  // per-node status endpoint is what Proxmox's own UI uses for the exact
+  // numbers shown on a node's Summary page, so fetch that per node instead.
+  const statuses = await Promise.all(
+    onlineNodes.map(async (n) => {
+      try {
+        const res = await integrationFetch(`${base}/api2/json/nodes/${n.node}/status`, {
+          headers,
+          insecure,
+          cache: "no-store",
+        });
+        if (!res.ok) return null;
+        const body = (await res.json()) as { data: NodeStatus };
+        return body.data;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  const validStatuses = statuses.filter((s): s is NodeStatus => s !== null);
+
+  const avgCpuPercent = validStatuses.length
+    ? (validStatuses.reduce((sum, s) => sum + (s.cpu ?? 0), 0) / validStatuses.length) * 100
     : 0;
-  const totalMem = onlineNodes.reduce((sum, n) => sum + (n.maxmem ?? 0), 0);
-  const usedMem = onlineNodes.reduce((sum, n) => sum + (n.mem ?? 0), 0);
-  const memUsedPercent = totalMem ? (usedMem / totalMem) * 100 : 0;
+  const memUsedBytes = validStatuses.reduce((sum, s) => sum + (s.memory?.used ?? 0), 0);
+  const memTotalBytes = validStatuses.reduce((sum, s) => sum + (s.memory?.total ?? 0), 0);
+  const diskUsedBytes = validStatuses.reduce((sum, s) => sum + (s.rootfs?.used ?? 0), 0);
+  const diskTotalBytes = validStatuses.reduce((sum, s) => sum + (s.rootfs?.total ?? 0), 0);
 
   const resourcesRes = await integrationFetch(`${base}/api2/json/cluster/resources?type=vm`, {
     headers,
-    insecure: config.insecureTls,
+    insecure,
     cache: "no-store",
   });
   await assertOk(resourcesRes, "Proxmox");
-  const resourcesBody = (await resourcesRes.json()) as { data: Array<{ status: string }> };
-  const runningGuests = (resourcesBody.data ?? []).filter((r) => r.status === "running").length;
+  const resourcesBody = (await resourcesRes.json()) as {
+    data: Array<{ type: string; status: string }>;
+  };
+  const guests = resourcesBody.data ?? [];
+  const vms = guests.filter((g) => g.type === "qemu");
+  const cts = guests.filter((g) => g.type === "lxc");
 
-  return { nodeCount: nodes.length, avgCpuPercent, memUsedPercent, runningGuests };
+  return {
+    nodeCount: nodes.length,
+    avgCpuPercent,
+    memUsedPercent: memTotalBytes ? (memUsedBytes / memTotalBytes) * 100 : 0,
+    memUsedBytes,
+    memTotalBytes,
+    diskUsedPercent: diskTotalBytes ? (diskUsedBytes / diskTotalBytes) * 100 : 0,
+    vmsRunning: vms.filter((v) => v.status === "running").length,
+    vmsTotal: vms.length,
+    ctsRunning: cts.filter((c) => c.status === "running").length,
+    ctsTotal: cts.length,
+  };
 }

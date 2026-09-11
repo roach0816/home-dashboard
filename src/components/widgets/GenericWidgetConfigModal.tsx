@@ -18,8 +18,14 @@ export default function GenericWidgetConfigModal({
   onSave: (config: Record<string, unknown>) => void;
   onClose: () => void;
 }) {
+  const supportsRefresh = definition.defaultRefreshSeconds != null;
+
   const [configValues, setConfigValues] = useState<Record<string, string | number | boolean>>(() => {
     const values: Record<string, string | number | boolean> = { label: (initialConfig.label as string) ?? "" };
+    if (supportsRefresh) {
+      values.refreshSeconds =
+        (initialConfig.refreshSeconds as number) ?? definition.defaultRefreshSeconds ?? 300;
+    }
     for (const field of definition.configFields) {
       const existing = initialConfig[field.key];
       if (existing !== undefined) {
@@ -106,6 +112,23 @@ export default function GenericWidgetConfigModal({
             className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
           />
         </div>
+
+        {supportsRefresh && (
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">Refresh interval (seconds)</label>
+            <input
+              type="number"
+              min={5}
+              max={3600}
+              value={String(configValues.refreshSeconds ?? "")}
+              onChange={(e) => {
+                const n = Number(e.target.value);
+                setField("refreshSeconds", Number.isFinite(n) ? Math.min(3600, Math.max(5, Math.trunc(n))) : 5);
+              }}
+              className="w-28 rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+            />
+          </div>
+        )}
 
         {definition.configFields.map((field) =>
           field.type === "checkbox" ? (

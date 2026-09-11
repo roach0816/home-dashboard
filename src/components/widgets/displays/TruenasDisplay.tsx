@@ -8,7 +8,7 @@ import { WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
 
 export default function TruenasDisplay({ widget }: { widget: Extract<Widget, { type: "truenas" }> }) {
   const label = widget.config.label || "TrueNAS";
-  const { data, error } = useWidgetData<TruenasData>(widget.id);
+  const { data, error } = useWidgetData<TruenasData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

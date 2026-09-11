@@ -35,6 +35,7 @@ export default function TempestConfigModal({
   const [unit, setUnit] = useState<"fahrenheit" | "celsius">(initial?.unit ?? "fahrenheit");
   const [display, setDisplay] = useState<WeatherDisplayMode>(initial?.display ?? "full");
   const [forecastDays, setForecastDays] = useState(initial?.forecastDays ?? 4);
+  const [refreshSeconds, setRefreshSeconds] = useState(initial?.refreshSeconds ?? 300);
   const [saving, setSaving] = useState(false);
 
   async function loadStations(token?: string) {
@@ -81,7 +82,7 @@ export default function TempestConfigModal({
       }).catch(() => {});
     }
     setSaving(false);
-    onSave({ stationId, label: label.trim() || undefined, unit, display, forecastDays });
+    onSave({ stationId, label: label.trim() || undefined, unit, display, forecastDays, refreshSeconds });
   }
 
   const canSave = stationId != null;
@@ -158,6 +159,21 @@ export default function TempestConfigModal({
             onChange={(e) => setLabel(e.target.value)}
             placeholder="Defaults to the station name"
             className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-muted">Refresh interval (seconds)</label>
+          <input
+            type="number"
+            min={5}
+            max={3600}
+            value={refreshSeconds}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              setRefreshSeconds(Number.isFinite(n) ? Math.min(3600, Math.max(5, Math.trunc(n))) : 5);
+            }}
+            className="w-28 rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
           />
         </div>
 

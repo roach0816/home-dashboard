@@ -7,7 +7,7 @@ import { WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
 
 export default function AdguardDisplay({ widget }: { widget: Extract<Widget, { type: "adguard" }> }) {
   const label = widget.config.label || "AdGuard Home";
-  const { data, error } = useWidgetData<AdguardData>(widget.id);
+  const { data, error } = useWidgetData<AdguardData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
   if (error) return <WidgetError label={label} error={error} />;
   if (!data) return <WidgetLoading label={label} />;

@@ -27,6 +27,8 @@ export type WidgetDefinition = {
   secretFields: SecretFieldSpec[];
   /** True for widgets with bespoke config UI (e.g. Tempest's station picker) instead of the generic form. */
   customConfig?: boolean;
+  /** Default auto-refresh interval in seconds. Omit for widgets that don't poll (e.g. the speed test). */
+  defaultRefreshSeconds?: number;
 };
 
 const insecureTlsField: ConfigFieldSpec = {
@@ -39,6 +41,7 @@ const insecureTlsField: ConfigFieldSpec = {
 export const WIDGET_REGISTRY: WidgetDefinition[] = [
   {
     type: "tempest-weather",
+    defaultRefreshSeconds: 300,
     name: "Tempest Weather Station",
     description: "Current conditions and forecast from your own WeatherFlow Tempest station.",
     icon: "mdi:weather-partly-cloudy",
@@ -48,6 +51,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "home-assistant",
+    defaultRefreshSeconds: 300,
     name: "Home Assistant",
     description: "Entity count and how many are unavailable.",
     icon: "selfhst:home-assistant",
@@ -56,8 +60,9 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "proxmox",
+    defaultRefreshSeconds: 60,
     name: "Proxmox VE",
-    description: "Node count, CPU load, and running VMs/containers.",
+    description: "CPU/memory/disk usage, and running VMs vs. containers.",
     icon: "selfhst:proxmox",
     configFields: [
       { key: "baseUrl", label: "Base URL", type: "url", placeholder: "https://proxmox.local:8006" },
@@ -75,6 +80,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "kubernetes",
+    defaultRefreshSeconds: 60,
     name: "Kubernetes / Rancher",
     description: "Node readiness and pod status for a k3s/Rancher cluster.",
     icon: "mdi:kubernetes",
@@ -83,6 +89,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "adguard",
+    defaultRefreshSeconds: 300,
     name: "AdGuard Home",
     description: "Queries today and percent blocked.",
     icon: "selfhst:adguard-home",
@@ -94,6 +101,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "unifi",
+    defaultRefreshSeconds: 60,
     name: "UniFi Network",
     description: "WLAN/LAN client counts, device online status, and per-WAN provider status.",
     icon: "selfhst:ubiquiti-unifi",
@@ -109,6 +117,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "pihole",
+    defaultRefreshSeconds: 300,
     name: "Pi-hole",
     description: "Queries today, percent blocked, and blocklist size.",
     icon: "selfhst:pi-hole",
@@ -117,6 +126,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "portainer",
+    defaultRefreshSeconds: 60,
     name: "Portainer",
     description: "Running and stopped containers across all environments.",
     icon: "selfhst:portainer",
@@ -125,6 +135,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "plex",
+    defaultRefreshSeconds: 60,
     name: "Plex",
     description: "Currently playing streams.",
     icon: "selfhst:plex",
@@ -133,6 +144,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "jellyfin",
+    defaultRefreshSeconds: 60,
     name: "Jellyfin",
     description: "Active playback sessions and library size.",
     icon: "selfhst:jellyfin",
@@ -141,6 +153,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "sonarr",
+    defaultRefreshSeconds: 300,
     name: "Sonarr",
     description: "Download queue and upcoming episodes.",
     icon: "selfhst:sonarr",
@@ -152,6 +165,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "radarr",
+    defaultRefreshSeconds: 300,
     name: "Radarr",
     description: "Download queue and upcoming movies.",
     icon: "selfhst:radarr",
@@ -163,6 +177,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "truenas",
+    defaultRefreshSeconds: 300,
     name: "TrueNAS",
     description: "Pool usage and active alerts.",
     icon: "selfhst:truenas-scale",
@@ -171,6 +186,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "uptime-kuma",
+    defaultRefreshSeconds: 60,
     name: "Uptime Kuma",
     description: "Monitors up vs. down.",
     icon: "selfhst:uptime-kuma",
@@ -179,6 +195,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "enphase",
+    defaultRefreshSeconds: 60,
     name: "Enphase Solar",
     description: "Current solar production and energy produced today.",
     icon: "selfhst:enphase",
@@ -195,6 +212,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "nextcloud",
+    defaultRefreshSeconds: 300,
     name: "Nextcloud",
     description: "Active users and free storage.",
     icon: "selfhst:nextcloud",
@@ -206,6 +224,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "ping-monitor",
+    defaultRefreshSeconds: 60,
     name: "Ping / Port Monitor",
     description: "Checks whether a host and port is reachable.",
     icon: "mdi:lan-connect",

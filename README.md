@@ -53,9 +53,13 @@ local caching of icon bytes.
 
 Edit mode → **+ Add widget** opens a store of 18 integrations. Picking one
 opens a small config form: a base URL plus whatever credentials that
-service needs (API key, username/password, or a token). Every widget also
-gets a **Test connection** button before you save, so a typo doesn't just
-silently fail later.
+service needs (API key, username/password, or a token), plus a
+**Refresh interval** in seconds (defaults to 60s for fast-changing data
+like Proxmox/Kubernetes/Plex, 300s for the rest) — every widget except the
+manually-triggered speed test polls on its own configured interval. Every
+widget also gets a **Test connection** button before you save, so a typo
+doesn't just silently fail later, and every secret field has a show/hide
+toggle so you can actually verify what you typed.
 
 **Credentials never reach the browser.** Each widget's secret fields
 (passwords, API keys, tokens) are stored server-side in the same
