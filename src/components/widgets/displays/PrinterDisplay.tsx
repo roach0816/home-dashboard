@@ -21,12 +21,13 @@ export default function PrinterDisplay({ widget }: { widget: Extract<Widget, { t
           {data.supplies.map((supply, i) => {
             const low = supply.percent != null && supply.percent <= 15;
             const medium = supply.percent != null && supply.percent > 15 && supply.percent <= 35;
+            const statusIsBad = supply.status != null && supply.status !== "OK";
             return (
               <div key={`${supply.description}-${i}`} className="flex flex-col gap-1">
                 <div className="flex items-center justify-between gap-2 text-xs">
                   <span className="truncate text-foreground">{supply.description}</span>
-                  <span className={low ? "text-red-400" : "text-muted"}>
-                    {supply.percent != null ? `${supply.percent}%` : "—"}
+                  <span className={low || statusIsBad ? "text-red-400" : "text-muted"}>
+                    {supply.percent != null ? `${supply.percent}%` : (supply.status ?? "—")}
                   </span>
                 </div>
                 {supply.percent != null && (
