@@ -7,6 +7,7 @@ import type { Widget } from "@/lib/types";
 import { getWidgetDefinition } from "@/lib/widgets/registry";
 import GenericWidgetConfigModal from "./widgets/GenericWidgetConfigModal";
 import TempestConfigModal from "./widgets/TempestConfigModal";
+import AdguardConfigModal from "./widgets/AdguardConfigModal";
 import TempestDisplay from "./widgets/displays/TempestDisplay";
 import HomeAssistantDisplay from "./widgets/displays/HomeAssistantDisplay";
 import ProxmoxDisplay from "./widgets/displays/ProxmoxDisplay";
@@ -177,7 +178,19 @@ export default function WidgetCard({
         />
       )}
 
-      {configuring && widget.type !== "tempest-weather" && (
+      {configuring && widget.type === "adguard" && (
+        <AdguardConfigModal
+          widgetId={widget.id}
+          initial={widget.config}
+          onSave={(config) => {
+            onUpdate({ ...widget, config });
+            setConfiguring(false);
+          }}
+          onClose={() => setConfiguring(false)}
+        />
+      )}
+
+      {configuring && widget.type !== "tempest-weather" && widget.type !== "adguard" && (
         <GenericWidgetConfigModal
           definition={definition}
           widgetId={widget.id}

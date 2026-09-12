@@ -98,16 +98,13 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "adguard",
-    linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "AdGuard Home",
-    description: "Queries today and percent blocked.",
+    description: "Queries and percent blocked across one or more AdGuard Home instances, combined or individually.",
     icon: "selfhst:adguard-home",
-    configFields: [{ key: "baseUrl", label: "Base URL", type: "url", placeholder: "http://adguard.local" }],
-    secretFields: [
-      { key: "username", label: "Username" },
-      { key: "password", label: "Password" },
-    ],
+    customConfig: true,
+    configFields: [],
+    secretFields: [],
   },
   {
     type: "unifi",

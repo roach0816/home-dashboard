@@ -62,8 +62,14 @@ export type KubernetesConfig = BaseWidgetConfig & {
   insecureTls?: boolean;
 };
 
-export type AdguardConfig = BaseWidgetConfig & {
+export type AdguardNode = {
+  id: string;
+  label: string;
   baseUrl: string;
+};
+
+export type AdguardConfig = BaseWidgetConfig & {
+  nodes: AdguardNode[];
 };
 
 export type UnifiConfig = BaseWidgetConfig & {

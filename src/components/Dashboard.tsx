@@ -26,6 +26,7 @@ import SettingsModal from "./SettingsModal";
 import WidgetCard from "./WidgetCard";
 import WidgetStoreModal from "./widgets/WidgetStoreModal";
 import TempestConfigModal from "./widgets/TempestConfigModal";
+import AdguardConfigModal from "./widgets/AdguardConfigModal";
 import GenericWidgetConfigModal from "./widgets/GenericWidgetConfigModal";
 import { getWidgetDefinition } from "@/lib/widgets/registry";
 
@@ -311,7 +312,18 @@ export default function Dashboard({
         />
       )}
 
-      {pendingWidget && pendingWidget.type !== "tempest-weather" && (
+      {pendingWidget?.type === "adguard" && (
+        <AdguardConfigModal
+          widgetId={pendingWidget.id}
+          onSave={(config) => {
+            addWidget({ id: pendingWidget.id, type: "adguard", config });
+            setPendingWidget(null);
+          }}
+          onClose={() => setPendingWidget(null)}
+        />
+      )}
+
+      {pendingWidget && pendingWidget.type !== "tempest-weather" && pendingWidget.type !== "adguard" && (
         <GenericWidgetConfigModal
           definition={getWidgetDefinition(pendingWidget.type)}
           widgetId={pendingWidget.id}

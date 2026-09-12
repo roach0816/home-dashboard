@@ -41,7 +41,23 @@ const kubernetesConfigSchema = z.object({
   apiUrl: baseUrl,
   insecureTls,
 });
-const adguardConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
+const adguardNodeSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().max(100).default(""),
+  baseUrl: z.string().min(1).max(500),
+});
+// Accepts the pre-multi-node shape ({ baseUrl }) and migrates it to a single
+// implicit node in place, so existing saved widgets don't break on upgrade —
+// this data lives in one shared file validated as a whole, and a validation
+// failure on any one widget would fall back to the seed data, wiping
+// everything else in it.
+const adguardConfigSchema = z.preprocess((val) => {
+  if (val && typeof val === "object" && !("nodes" in val) && "baseUrl" in val) {
+    const { baseUrl, ...rest } = val as Record<string, unknown>;
+    return { ...rest, nodes: [{ id: "default", baseUrl }] };
+  }
+  return val;
+}, z.object({ label, refreshSeconds, cardSize, nodes: z.array(adguardNodeSchema).min(1).max(10) }));
 const unifiConfigSchema = z.object({
   label,
   refreshSeconds,
