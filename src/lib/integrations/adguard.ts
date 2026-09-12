@@ -7,6 +7,10 @@ export type AdguardData = {
   queriesToday: number;
   blockedToday: number;
   blockedPercent: number;
+  /** Percent of today's queries blocked by the safebrowsing module (malware/phishing). */
+  malwarePercent: number;
+  /** Percent of today's queries blocked by parental control (adult websites). */
+  adultPercent: number;
   topBlockedDomain?: string;
 };
 
@@ -26,16 +30,22 @@ export async function fetchAdguardData(
   const body = (await res.json()) as {
     num_dns_queries: number;
     num_blocked_filtering: number;
+    num_replaced_safebrowsing?: number;
+    num_replaced_parental?: number;
     top_blocked_domains?: Array<Record<string, number>>;
   };
 
   const topEntry = body.top_blocked_domains?.[0];
   const topBlockedDomain = topEntry ? Object.keys(topEntry)[0] : undefined;
+  const total = body.num_dns_queries ?? 0;
+  const percentOf = (n: number | undefined) => (total ? ((n ?? 0) / total) * 100 : 0);
 
   return {
-    queriesToday: body.num_dns_queries ?? 0,
+    queriesToday: total,
     blockedToday: body.num_blocked_filtering ?? 0,
-    blockedPercent: body.num_dns_queries ? (body.num_blocked_filtering / body.num_dns_queries) * 100 : 0,
+    blockedPercent: percentOf(body.num_blocked_filtering),
+    malwarePercent: percentOf(body.num_replaced_safebrowsing),
+    adultPercent: percentOf(body.num_replaced_parental),
     topBlockedDomain,
   };
 }
