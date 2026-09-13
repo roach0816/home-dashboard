@@ -28,7 +28,7 @@ export default function TempestDisplay({
   const showForecast = config.display !== "current";
 
   return (
-    <div className={`flex flex-col gap-3 ${compact ? "p-2.5" : "p-3.5"}`}>
+    <div className={`flex flex-col gap-2.5 ${compact ? "p-2.5" : "p-3.5"}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           {href ? (
@@ -44,7 +44,9 @@ export default function TempestDisplay({
           ) : (
             <p className="truncate text-sm font-medium text-foreground">{label}</p>
           )}
-          {showCurrent && !compact && <p className="truncate text-xs text-muted">{data.current.conditions}</p>}
+          {showCurrent && !compact && data.current.conditions && (
+            <p className="truncate text-xs text-muted">{data.current.conditions}</p>
+          )}
         </div>
         {showCurrent && (
           // Doubles as this widget's "logo" corner — the live conditions icon is more
