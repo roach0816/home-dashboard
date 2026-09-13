@@ -9,16 +9,19 @@ import type { TempestForecast } from "@/lib/tempest";
 export default function TempestDisplay({
   widget,
   compact,
+  href,
 }: {
   widget: Extract<Widget, { type: "tempest-weather" }>;
   compact?: boolean;
+  href?: string;
+  icon?: string;
 }) {
   const { config } = widget;
   const { data, error } = useWidgetData<TempestForecast>(widget.id, (config.refreshSeconds ?? 300) * 1000);
   const label = config.label || data?.cityState || data?.locationName || "Tempest station";
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} />;
 
   const unitLabel = config.unit === "fahrenheit" ? "°F" : "°C";
   const showCurrent = config.display !== "forecast";
@@ -27,12 +30,26 @@ export default function TempestDisplay({
   return (
     <div className={`flex flex-col gap-3 ${compact ? "p-2.5" : "p-3.5"}`}>
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">{label}</p>
+        <div className="min-w-0 flex-1">
+          {href ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="block truncate text-sm font-medium text-foreground hover:underline"
+            >
+              {label}
+            </a>
+          ) : (
+            <p className="truncate text-sm font-medium text-foreground">{label}</p>
+          )}
           {showCurrent && !compact && <p className="truncate text-xs text-muted">{data.current.conditions}</p>}
         </div>
         {showCurrent && (
-          <span className={compact ? "shrink-0 text-2xl" : "shrink-0 text-3xl"} aria-hidden>
+          // Doubles as this widget's "logo" corner — the live conditions icon is more
+          // useful here than a static weather-app logo would be.
+          <span className="shrink-0 text-3xl" aria-hidden>
             {weatherEmoji(data.current.icon)}
           </span>
         )}
@@ -41,7 +58,7 @@ export default function TempestDisplay({
       {showCurrent && (
         <>
           <div className="flex items-baseline gap-2">
-            <span className={compact ? "text-2xl font-semibold text-foreground" : "text-3xl font-semibold text-foreground"}>
+            <span className="text-3xl font-semibold text-foreground">
               {Math.round(data.current.temperature)}
               {unitLabel}
             </span>

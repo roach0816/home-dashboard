@@ -9,19 +9,23 @@ import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine } from "..
 export default function ProxmoxDisplay({
   widget,
   compact,
+  href,
+  icon,
 }: {
   widget: Extract<Widget, { type: "proxmox" }>;
   compact?: boolean;
+  href?: string;
+  icon?: string;
 }) {
   const label = widget.config.label || "Proxmox VE";
   const { data, error } = useWidgetData<ProxmoxData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
 
   if (compact) {
     return (
-      <WidgetFrame label={label} compact>
+      <WidgetFrame label={label} compact href={href} icon={icon}>
         <StatRow
           compact
           items={[
@@ -35,7 +39,7 @@ export default function ProxmoxDisplay({
   }
 
   return (
-    <WidgetFrame label={label}>
+    <WidgetFrame label={label} href={href} icon={icon}>
       <StatRow
         items={[
           { value: data.nodeCount, caption: "nodes" },

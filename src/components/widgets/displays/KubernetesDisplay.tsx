@@ -13,15 +13,19 @@ function percentOf(used: number, total: number): number {
 export default function KubernetesDisplay({
   widget,
   compact,
+  href,
+  icon,
 }: {
   widget: Extract<Widget, { type: "kubernetes" }>;
   compact?: boolean;
+  href?: string;
+  icon?: string;
 }) {
   const label = widget.config.label || "Kubernetes";
   const { data, error } = useWidgetData<KubernetesData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
 
   const hasUsage = data.cpuUsedCores != null && data.memUsedBytes != null;
   const cpuPercent = hasUsage
@@ -35,7 +39,7 @@ export default function KubernetesDisplay({
 
   if (compact) {
     return (
-      <WidgetFrame label={label} compact>
+      <WidgetFrame label={label} compact href={href} icon={icon}>
         <StatRow
           compact
           items={[
@@ -49,7 +53,7 @@ export default function KubernetesDisplay({
   }
 
   return (
-    <WidgetFrame label={label}>
+    <WidgetFrame label={label} href={href} icon={icon}>
       <StatRow
         items={[
           { value: `${data.nodesReady}/${data.nodeCount}`, caption: "nodes ready" },

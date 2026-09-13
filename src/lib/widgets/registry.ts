@@ -7,6 +7,8 @@ export type ConfigFieldSpec = {
   placeholder?: string;
   helpText?: string;
   defaultValue?: string | number | boolean;
+  /** When true, the field isn't required to save the widget (e.g. an optional link-only URL). */
+  optional?: boolean;
 };
 
 export type SecretFieldSpec = {
@@ -88,12 +90,24 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "kubernetes",
-    linkField: "apiUrl",
+    linkField: "rancherUrl",
     defaultRefreshSeconds: 60,
     name: "Kubernetes / Rancher",
     description: "Node readiness and pod status for a k3s/Rancher cluster.",
     icon: "mdi:kubernetes",
-    configFields: [{ key: "apiUrl", label: "API server URL", type: "url", placeholder: "https://k3s.local:6443" }, insecureTlsField],
+    configFields: [
+      { key: "apiUrl", label: "API server URL", type: "url", placeholder: "https://k3s.local:6443" },
+      insecureTlsField,
+      {
+        key: "rancherUrl",
+        label: "Rancher URL (optional)",
+        type: "url",
+        placeholder: "https://rancher.local",
+        optional: true,
+        helpText:
+          "Only used for \"Link card to device\" — the API server URL above doesn't host a web page.",
+      },
+    ],
     secretFields: [{ key: "token", label: "Service account bearer token" }],
   },
   {

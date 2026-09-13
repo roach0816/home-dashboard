@@ -40,6 +40,7 @@ const kubernetesConfigSchema = z.object({
   linkToDevice,
   apiUrl: baseUrl,
   insecureTls,
+  rancherUrl: z.string().max(500).optional(),
 });
 const adguardNodeSchema = z.object({
   id: z.string().min(1),

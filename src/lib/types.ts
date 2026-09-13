@@ -60,6 +60,8 @@ export type ProxmoxConfig = BaseWidgetConfig & {
 export type KubernetesConfig = BaseWidgetConfig & {
   apiUrl: string;
   insecureTls?: boolean;
+  /** Optional Rancher UI URL — the API server URL isn't a web page, so "Link card to device" targets this instead. */
+  rancherUrl?: string;
 };
 
 export type AdguardNode = {

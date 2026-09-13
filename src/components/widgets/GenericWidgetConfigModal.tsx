@@ -69,7 +69,7 @@ export default function GenericWidgetConfigModal({
       const res = await fetch("/api/widgets/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: definition.type, config: configValues, secrets: secretDrafts }),
+        body: JSON.stringify({ type: definition.type, config: configValues, secrets: secretDrafts, widgetId }),
       });
       const body = await res.json();
       if (body.ok) {
@@ -101,7 +101,7 @@ export default function GenericWidgetConfigModal({
   }
 
   const canSave = definition.configFields
-    .filter((f) => f.type !== "checkbox")
+    .filter((f) => f.type !== "checkbox" && !f.optional)
     .every((f) => String(configValues[f.key] ?? "").trim().length > 0);
 
   return (

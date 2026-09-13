@@ -28,46 +28,48 @@ import NextcloudDisplay from "./widgets/displays/NextcloudDisplay";
 import PingMonitorDisplay from "./widgets/displays/PingMonitorDisplay";
 import PrinterDisplay from "./widgets/displays/PrinterDisplay";
 
-function WidgetDisplay({ widget, compact }: { widget: Widget; compact: boolean }) {
+type DisplayProps = { widget: Widget; compact: boolean; href?: string; icon?: string };
+
+function WidgetDisplay({ widget, compact, href, icon }: DisplayProps) {
   switch (widget.type) {
     case "tempest-weather":
-      return <TempestDisplay widget={widget} compact={compact} />;
+      return <TempestDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "home-assistant":
-      return <HomeAssistantDisplay widget={widget} compact={compact} />;
+      return <HomeAssistantDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "proxmox":
-      return <ProxmoxDisplay widget={widget} compact={compact} />;
+      return <ProxmoxDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "kubernetes":
-      return <KubernetesDisplay widget={widget} compact={compact} />;
+      return <KubernetesDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "adguard":
-      return <AdguardDisplay widget={widget} compact={compact} />;
+      return <AdguardDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "unifi":
-      return <UnifiDisplay widget={widget} compact={compact} />;
+      return <UnifiDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "pihole":
-      return <PiholeDisplay widget={widget} compact={compact} />;
+      return <PiholeDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "portainer":
-      return <PortainerDisplay widget={widget} compact={compact} />;
+      return <PortainerDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "plex":
-      return <PlexDisplay widget={widget} compact={compact} />;
+      return <PlexDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "jellyfin":
-      return <JellyfinDisplay widget={widget} compact={compact} />;
+      return <JellyfinDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "sonarr":
-      return <SonarrDisplay widget={widget} compact={compact} />;
+      return <SonarrDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "radarr":
-      return <RadarrDisplay widget={widget} compact={compact} />;
+      return <RadarrDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "truenas":
-      return <TruenasDisplay widget={widget} compact={compact} />;
+      return <TruenasDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "uptime-kuma":
-      return <UptimeKumaDisplay widget={widget} compact={compact} />;
+      return <UptimeKumaDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "enphase":
-      return <EnphaseDisplay widget={widget} compact={compact} />;
+      return <EnphaseDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "speedtest":
-      return <SpeedtestDisplay widget={widget} compact={compact} />;
+      return <SpeedtestDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "nextcloud":
-      return <NextcloudDisplay widget={widget} compact={compact} />;
+      return <NextcloudDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "ping-monitor":
-      return <PingMonitorDisplay widget={widget} compact={compact} />;
+      return <PingMonitorDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "printer-snmp":
-      return <PrinterDisplay widget={widget} compact={compact} />;
+      return <PrinterDisplay widget={widget} compact={compact} href={href} icon={icon} />;
   }
 }
 
@@ -110,9 +112,7 @@ export default function WidgetCard({
 
   const definition = getWidgetDefinition(widget.type);
   const compact = widget.config.cardSize === "half";
-  const href = !editing && widget.config.linkToDevice ? deviceHref(widget) : undefined;
-
-  const content = <WidgetDisplay widget={widget} compact={compact} />;
+  const href = widget.config.linkToDevice ? deviceHref(widget) : undefined;
 
   return (
     <div
@@ -152,19 +152,7 @@ export default function WidgetCard({
         </div>
       )}
 
-      {href ? (
-        <a
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          className="block transition hover:opacity-80"
-          title={`Open ${definition.name}`}
-        >
-          {content}
-        </a>
-      ) : (
-        content
-      )}
+      <WidgetDisplay widget={widget} compact={compact} href={href} icon={definition.icon} />
 
       {configuring && widget.type === "tempest-weather" && (
         <TempestConfigModal

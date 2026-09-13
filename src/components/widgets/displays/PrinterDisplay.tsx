@@ -8,18 +8,22 @@ import { WidgetFrame, WidgetLoading, WidgetError } from "../primitives";
 export default function PrinterDisplay({
   widget,
   compact,
+  href,
+  icon,
 }: {
   widget: Extract<Widget, { type: "printer-snmp" }>;
   compact?: boolean;
+  href?: string;
+  icon?: string;
 }) {
   const label = widget.config.label || "Printer";
   const { data, error } = useWidgetData<PrinterData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
 
   return (
-    <WidgetFrame label={label} compact={compact}>
+    <WidgetFrame label={label} compact={compact} href={href} icon={icon}>
       {data.supplies.length === 0 ? (
         <p className="text-xs text-muted">No supply data reported.</p>
       ) : compact ? (

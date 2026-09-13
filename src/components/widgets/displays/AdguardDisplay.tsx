@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { Widget } from "@/lib/types";
 import type { AdguardData, AdguardStats } from "@/lib/integrations/adguard";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
-import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
+import { WidgetFrame, WidgetLoading, WidgetError, StatRow } from "../primitives";
 
 function StatsView({ stats, compact }: { stats: AdguardStats; compact?: boolean }) {
   if (compact) {
@@ -32,7 +32,6 @@ function StatsView({ stats, compact }: { stats: AdguardStats; compact?: boolean 
           { value: Math.round(stats.adultPercent), unit: "%", caption: "adult websites" },
         ]}
       />
-      {stats.topBlockedDomain && <StatusLine text={`Top blocked: ${stats.topBlockedDomain}`} />}
     </>
   );
 }
@@ -40,22 +39,25 @@ function StatsView({ stats, compact }: { stats: AdguardStats; compact?: boolean 
 export default function AdguardDisplay({
   widget,
   compact,
+  icon,
 }: {
   widget: Extract<Widget, { type: "adguard" }>;
   compact?: boolean;
+  href?: string;
+  icon?: string;
 }) {
   const label = widget.config.label || "AdGuard Home";
   const { data, error } = useWidgetData<AdguardData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
   const [selected, setSelected] = useState<string>("combined");
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} icon={icon} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} icon={icon} />;
 
   const showTabs = data.nodes.length > 1;
   const selectedNode = selected === "combined" ? undefined : data.nodes.find((n) => n.id === selected);
 
   return (
-    <WidgetFrame label={label} compact={compact}>
+    <WidgetFrame label={label} compact={compact} icon={icon}>
       {showTabs && (
         <div className="-mt-1 flex flex-wrap gap-1">
           <button

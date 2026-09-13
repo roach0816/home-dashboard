@@ -76,6 +76,7 @@ export default function AdguardConfigModal({
           type: "adguard",
           config: { nodes: [{ id: node.id, label: node.label, baseUrl: node.baseUrl }] },
           secrets: { [`${node.id}:username`]: node.usernameDraft, [`${node.id}:password`]: node.passwordDraft },
+          widgetId,
         }),
       });
       const body = await res.json();
