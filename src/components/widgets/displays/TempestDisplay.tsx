@@ -60,21 +60,21 @@ export default function TempestDisplay({
       {showCurrent && (
         <>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-semibold text-foreground">
+            <span className="text-2xl font-semibold text-foreground">
               {Math.round(data.current.temperature)}
               {unitLabel}
             </span>
             {!compact && (
               <span className="text-xs text-muted">
                 feels {Math.round(data.current.feelsLike)}
-                {unitLabel}
+                {unitLabel} · {data.current.humidity}% humidity
               </span>
             )}
           </div>
           {!compact && (
-            <p className="-mt-2 text-xs text-muted">
-              {data.current.humidity}% humidity · {Math.round(data.current.windSpeed)}{" "}
-              {config.unit === "fahrenheit" ? "mph" : "km/h"} {data.current.windDirectionCardinal}
+            <p className="text-xs text-muted">
+              {Math.round(data.current.windSpeed)} {config.unit === "fahrenheit" ? "mph" : "km/h"}{" "}
+              {data.current.windDirectionCardinal}
             </p>
           )}
         </>
