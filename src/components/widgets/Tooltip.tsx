@@ -2,9 +2,17 @@
 
 import type { ReactNode } from "react";
 
-export default function Tooltip({ label, children }: { label: string; children: ReactNode }) {
+export default function Tooltip({
+  label,
+  children,
+  className = "",
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
-    <span className="group relative inline-flex min-w-0 items-center">
+    <span className={`group relative inline-flex min-w-0 items-center ${className}`}>
       {children}
       <span
         role="tooltip"

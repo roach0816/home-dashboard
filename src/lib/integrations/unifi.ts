@@ -7,6 +7,8 @@ export type UnifiWan = {
   name: string;
   ispName?: string;
   uptimePercent?: number;
+  /** Live up/down, read off the gateway device's own wan1/2/3 telemetry — undefined if it couldn't be matched. */
+  up?: boolean;
 };
 
 export type UnifiData = {
@@ -50,6 +52,8 @@ async function login(base: string, username: string, password: string, insecure?
   return { cookie, prefix };
 }
 
+type RawWan = UnifiWan & { networkgroup?: string };
+
 /** Best-effort — this v2 API is only on newer UniFi OS controllers. Returns [] if unsupported. */
 async function fetchWanProviders(
   base: string,
@@ -57,7 +61,7 @@ async function fetchWanProviders(
   site: string,
   headers: Record<string, string>,
   insecure: boolean | undefined,
-): Promise<UnifiWan[]> {
+): Promise<RawWan[]> {
   try {
     const res = await integrationFetch(`${base}${prefix}/v2/api/site/${site}/wan/enriched-configuration`, {
       headers,
@@ -72,7 +76,7 @@ async function fetchWanProviders(
         ? (body as { data: unknown[] }).data
         : [body];
 
-    const wans: UnifiWan[] = [];
+    const wans: RawWan[] = [];
     for (const entry of list) {
       const e = entry as {
         configuration?: { name?: string; wan_networkgroup?: string };
@@ -90,12 +94,38 @@ async function fetchWanProviders(
       // sentinel here), unlike a real WAN that's simply down right now.
       if (!ispName && (uptimePercent == null || uptimePercent < 0)) continue;
 
-      wans.push({ name, ispName, uptimePercent });
+      wans.push({ name, ispName, uptimePercent, networkgroup: e?.configuration?.wan_networkgroup });
     }
     return wans;
   } catch {
     return [];
   }
+}
+
+/**
+ * Live per-WAN up/down, read off the gateway device's own telemetry rather
+ * than derived from historical uptime stats (which could show "ok" for a
+ * WAN that's down right now if it's mostly been fine over the stats
+ * window). Gateway devices expose their WAN ports as wan1/wan2/wan3
+ * sub-objects, each with an `up` boolean; wan_networkgroup values "WAN",
+ * "WAN2", "WAN3" map onto those 1:1. Returns {} if no gateway device (with
+ * this shape) is found — best-effort, matching fetchWanProviders' pattern.
+ */
+function gatewayWanStatus(devices: unknown[]): Record<string, boolean> {
+  for (const device of devices) {
+    const d = device as Record<string, { up?: boolean } | unknown>;
+    if (!d.wan1 && !d.wan2) continue;
+    const status: Record<string, boolean> = {};
+    for (const key of ["wan1", "wan2", "wan3"]) {
+      const wan = d[key] as { up?: boolean } | undefined;
+      if (wan && typeof wan.up === "boolean") {
+        const networkgroup = key === "wan1" ? "WAN" : `WAN${key.slice(3)}`;
+        status[networkgroup] = wan.up;
+      }
+    }
+    return status;
+  }
+  return {};
 }
 
 export async function fetchUnifiData(
@@ -128,6 +158,7 @@ export async function fetchUnifiData(
   await assertOk(devicesRes, "UniFi");
   const devicesBody = (await devicesRes.json()) as { data: Array<{ state?: number }> };
   const devices = devicesBody.data ?? [];
+  const wanStatusByGroup = gatewayWanStatus(devices);
 
   const healthRes = await integrationFetch(`${base}${prefix}/api/s/${site}/stat/health`, {
     headers,
@@ -140,7 +171,13 @@ export async function fetchUnifiData(
   };
   const wan = healthBody.data?.find((s) => s.subsystem === "wan");
 
-  const wans = await fetchWanProviders(base, prefix, site, headers, config.insecureTls);
+  const rawWans = await fetchWanProviders(base, prefix, site, headers, config.insecureTls);
+  const wans: UnifiWan[] = rawWans.map(({ name, ispName, uptimePercent, networkgroup }) => ({
+    name,
+    ispName,
+    uptimePercent,
+    up: networkgroup ? wanStatusByGroup[networkgroup] : undefined,
+  }));
 
   return {
     totalClients: clients.length,

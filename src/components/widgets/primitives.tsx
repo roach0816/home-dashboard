@@ -1,6 +1,6 @@
 "use client";
 
-import SiteIcon from "../SiteIcon";
+import WidgetLogo from "./WidgetLogo";
 
 export function WidgetFrame({
   label,
@@ -35,11 +35,7 @@ export function WidgetFrame({
             <p className="truncate text-sm font-medium text-foreground">{label}</p>
           )}
         </div>
-        {icon && (
-          <span className="shrink-0 opacity-80">
-            <SiteIcon title={label} url="" icon={icon} size={18} />
-          </span>
-        )}
+        <WidgetLogo icon={icon} size={24} className="opacity-80" />
       </div>
       {children}
     </div>

@@ -4,7 +4,7 @@ import type { Widget } from "@/lib/types";
 import type { PingMonitorData } from "@/lib/integrations/pingMonitor";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
 import { WidgetLoading, WidgetError, StatusLine } from "../primitives";
-import SiteIcon from "../../SiteIcon";
+import WidgetLogo from "../WidgetLogo";
 
 export default function PingMonitorDisplay({
   widget,
@@ -41,11 +41,7 @@ export default function PingMonitorDisplay({
             <p className="truncate text-sm font-medium text-foreground">{label}</p>
           )}
         </div>
-        {icon && (
-          <span className="shrink-0 opacity-80">
-            <SiteIcon title={label} url="" icon={icon} size={18} />
-          </span>
-        )}
+        <WidgetLogo icon={icon} size={24} className="opacity-80" />
         <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${data.up ? "bg-emerald-500" : "bg-red-400"}`} />
       </div>
       <StatusLine

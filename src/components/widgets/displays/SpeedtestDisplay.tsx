@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Widget } from "@/lib/types";
 import { StatRow } from "../primitives";
-import SiteIcon from "../../SiteIcon";
+import WidgetLogo from "../WidgetLogo";
 
 type Result = { downloadMbps: number; uploadMbps: number; latencyMs: number };
 
@@ -66,11 +66,7 @@ export default function SpeedtestDisplay({
     <div className={`flex flex-col gap-2.5 ${compact ? "p-2.5" : "p-3.5"}`}>
       <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{label}</p>
-        {icon && (
-          <span className="shrink-0 opacity-80">
-            <SiteIcon title={label} url="" icon={icon} size={18} />
-          </span>
-        )}
+        <WidgetLogo icon={icon} size={24} className="opacity-80" />
         <button
           type="button"
           onClick={runTest}

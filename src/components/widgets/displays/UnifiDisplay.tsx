@@ -3,7 +3,9 @@
 import type { Widget } from "@/lib/types";
 import type { UnifiData } from "@/lib/integrations/unifi";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
+import { ispIcon } from "@/lib/ispIcons";
 import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
+import WidgetLogo from "../WidgetLogo";
 import Tooltip from "../Tooltip";
 
 export default function UnifiDisplay({
@@ -39,29 +41,34 @@ export default function UnifiDisplay({
       {!compact && data.deviceCount > 0 && !allDevicesOnline && (
         <StatusLine text={`${data.deviceCount - data.devicesOnline} UniFi device(s) offline`} tone="bad" />
       )}
-      <StatusLine text={`WAN: ${data.wanStatus}${data.wanIp ? ` (${data.wanIp})` : ""}`} tone={wanOk ? "good" : "bad"} />
-      {!compact && data.wans.length > 0 && (
-        <div className="flex flex-col gap-0.5 border-t border-border pt-2">
+
+      {compact ? null : data.wans.length > 0 ? (
+        <div className="flex gap-1 border-t border-border pt-2.5">
           {data.wans.map((wan) => {
-            const name = wan.ispName ? `${wan.name} — ${wan.ispName}` : wan.name;
+            const statusTone = wan.up === false ? "text-red-400" : wan.up === true ? "text-emerald-500" : "text-muted";
+            const statusText = wan.up === false ? "Down" : wan.ispName ?? "Unknown ISP";
+            const body = (
+              <div className="flex w-full flex-col items-center gap-1 text-center">
+                <span className="truncate text-[10px] font-medium text-muted">{wan.name}</span>
+                <WidgetLogo icon={ispIcon(wan.ispName)} size={30} />
+                <span className={`max-w-full truncate text-[11px] ${statusTone}`}>{statusText}</span>
+              </div>
+            );
             return (
-              // No `truncate`/overflow-hidden on this line itself — that would clip the
-              // hover tooltip below, since it's an absolutely-positioned descendant.
-              // The inner span truncates its own text instead, via a fixed max-width.
-              <p key={wan.name} className="text-[11px] text-muted">
+              <div key={wan.name} className="min-w-0 flex-1">
                 {wan.uptimePercent != null ? (
-                  <Tooltip label={`${wan.uptimePercent.toFixed(1)}% uptime`}>
-                    <span className="block max-w-[230px] truncate underline decoration-dotted underline-offset-2">
-                      {name}
-                    </span>
+                  <Tooltip label={`${wan.uptimePercent.toFixed(1)}% uptime`} className="w-full">
+                    {body}
                   </Tooltip>
                 ) : (
-                  <span className="block max-w-[230px] truncate">{name}</span>
+                  body
                 )}
-              </p>
+              </div>
             );
           })}
         </div>
+      ) : (
+        <StatusLine text={`WAN: ${data.wanStatus}${data.wanIp ? ` (${data.wanIp})` : ""}`} tone={wanOk ? "good" : "bad"} />
       )}
     </WidgetFrame>
   );
