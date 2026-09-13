@@ -47,20 +47,23 @@ export default function UnifiDisplay({
       />
 
       {compact ? null : data.wans.length > 0 ? (
-        <div className="flex gap-1 border-t border-border pt-2.5">
+        <div
+          className="grid gap-1 border-t border-border pt-2"
+          style={{ gridTemplateColumns: `repeat(${data.wans.length}, minmax(0, 1fr))` }}
+        >
           {data.wans.map((wan) => {
             const statusTone = wan.up === false ? "text-red-400" : wan.up === true ? "text-emerald-500" : "text-muted";
             const body = (
-              <div className="flex w-full flex-col items-center gap-1 text-center">
+              <div className="flex w-full flex-col items-center gap-0.5 text-center">
                 <span className="truncate text-[10px] font-medium text-muted">{wan.name}</span>
-                <div className="flex h-8 w-8 items-center justify-center">
-                  <WidgetLogo icon={ispIcon(wan.ispName)} size={28} />
+                <div className="flex h-6 w-6 items-center justify-center">
+                  <WidgetLogo icon={ispIcon(wan.ispName)} size={22} />
                 </div>
                 <span className={`max-w-full truncate text-[11px] ${statusTone}`}>{wan.ispName ?? "Unknown ISP"}</span>
               </div>
             );
             return (
-              <div key={wan.name} className="min-w-0 flex-1">
+              <div key={wan.name} className="min-w-0">
                 {wan.uptimePercent != null ? (
                   <Tooltip label={`${wan.uptimePercent.toFixed(1)}% uptime`} className="w-full">
                     {body}

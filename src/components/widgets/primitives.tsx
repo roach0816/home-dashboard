@@ -116,7 +116,7 @@ export function StatRow({
     <div className={`flex ${compact ? "gap-3" : "gap-4"}`}>
       {items.map((item, i) => (
         <div key={i} className="flex flex-col">
-          <span className="text-2xl font-semibold text-foreground">
+          <span className="text-xl font-semibold text-foreground">
             {item.value}
             {item.unit && <span className="ml-0.5 text-sm font-normal text-muted">{item.unit}</span>}
           </span>

@@ -60,7 +60,7 @@ export default function TempestDisplay({
       {showCurrent && (
         <>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-foreground">
+            <span className="text-xl font-semibold text-foreground">
               {Math.round(data.current.temperature)}
               {unitLabel}
             </span>
