@@ -7,6 +7,7 @@ export function WidgetFrame({
   compact,
   href,
   icon,
+  warning,
   children,
 }: {
   label: string;
@@ -15,30 +16,54 @@ export function WidgetFrame({
   href?: string;
   /** Iconify id for the widget's logo, shown top-right of the title. */
   icon?: string;
+  /** When set, shows a small warning triangle next to the title (hover for this text). */
+  warning?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className={`flex flex-col ${compact ? "gap-1.5 p-2.5" : "gap-2.5 p-3.5"}`}>
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          {href ? (
-            <a
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="block truncate text-sm font-medium text-foreground hover:underline"
-            >
-              {label}
-            </a>
-          ) : (
-            <p className="truncate text-sm font-medium text-foreground">{label}</p>
-          )}
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
+          <div className="min-w-0 flex-1">
+            {href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="block truncate text-sm font-medium text-foreground hover:underline"
+              >
+                {label}
+              </a>
+            ) : (
+              <p className="truncate text-sm font-medium text-foreground">{label}</p>
+            )}
+          </div>
+          {warning && <WarningIcon title={warning} />}
         </div>
         <WidgetLogo icon={icon} size={24} className="opacity-80" />
       </div>
       {children}
     </div>
+  );
+}
+
+function WarningIcon({ title }: { title: string }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="shrink-0 text-amber-500"
+    >
+      <title>{title}</title>
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
   );
 }
 

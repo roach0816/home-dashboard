@@ -27,9 +27,16 @@ export default function UnifiDisplay({
 
   const wanOk = data.wanStatus === "ok";
   const allDevicesOnline = data.devicesOnline === data.deviceCount;
+  const offlineCount = data.deviceCount - data.devicesOnline;
 
   return (
-    <WidgetFrame label={label} compact={compact} href={href} icon={icon}>
+    <WidgetFrame
+      label={label}
+      compact={compact}
+      href={href}
+      icon={icon}
+      warning={data.deviceCount > 0 && !allDevicesOnline ? `${offlineCount} UniFi device(s) offline` : undefined}
+    >
       <StatRow
         compact={compact}
         items={[
@@ -38,20 +45,18 @@ export default function UnifiDisplay({
           { value: `${data.devicesOnline}/${data.deviceCount}`, caption: "devices online" },
         ]}
       />
-      {!compact && data.deviceCount > 0 && !allDevicesOnline && (
-        <StatusLine text={`${data.deviceCount - data.devicesOnline} UniFi device(s) offline`} tone="bad" />
-      )}
 
       {compact ? null : data.wans.length > 0 ? (
         <div className="flex gap-1 border-t border-border pt-2.5">
           {data.wans.map((wan) => {
             const statusTone = wan.up === false ? "text-red-400" : wan.up === true ? "text-emerald-500" : "text-muted";
-            const statusText = wan.up === false ? "Down" : wan.ispName ?? "Unknown ISP";
             const body = (
               <div className="flex w-full flex-col items-center gap-1 text-center">
                 <span className="truncate text-[10px] font-medium text-muted">{wan.name}</span>
-                <WidgetLogo icon={ispIcon(wan.ispName)} size={30} />
-                <span className={`max-w-full truncate text-[11px] ${statusTone}`}>{statusText}</span>
+                <div className="flex h-8 w-8 items-center justify-center">
+                  <WidgetLogo icon={ispIcon(wan.ispName)} size={28} />
+                </div>
+                <span className={`max-w-full truncate text-[11px] ${statusTone}`}>{wan.ispName ?? "Unknown ISP"}</span>
               </div>
             );
             return (
