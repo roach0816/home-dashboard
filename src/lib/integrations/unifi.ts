@@ -6,7 +6,9 @@ import { assertOk } from "./util";
 export type UnifiWan = {
   name: string;
   ispName?: string;
-  uptimePercent?: number;
+  /** Configured plan speed, in Mbps — this is what the WAN is set up for, not a live measurement. */
+  downMbps?: number;
+  upMbps?: number;
   /** Live up/down, read off the gateway device's own wan1/2/3 telemetry — undefined if it couldn't be matched. */
   up?: boolean;
 };
@@ -79,22 +81,33 @@ async function fetchWanProviders(
     const wans: RawWan[] = [];
     for (const entry of list) {
       const e = entry as {
-        configuration?: { name?: string; wan_networkgroup?: string };
+        configuration?: {
+          name?: string;
+          wan_networkgroup?: string;
+          wan_provider_capabilities?: { download_kilobits_per_second?: number; upload_kilobits_per_second?: number };
+        };
         details?: { service_provider?: { name?: string } };
-        statistics?: { uptime_percentage?: number };
       };
       const name = e?.configuration?.name || e?.configuration?.wan_networkgroup;
       if (!name) continue;
 
       const ispName = e?.details?.service_provider?.name;
-      const uptimePercent = e?.statistics?.uptime_percentage;
+      const downKbps = e?.configuration?.wan_provider_capabilities?.download_kilobits_per_second;
+      const upKbps = e?.configuration?.wan_provider_capabilities?.upload_kilobits_per_second;
       // Controllers report every WAN-capable port the hardware has, even
       // ones that were never actually set up. An unconfigured port has no
-      // known ISP and no real uptime data (UniFi uses -1 as a "no data"
-      // sentinel here), unlike a real WAN that's simply down right now.
-      if (!ispName && (uptimePercent == null || uptimePercent < 0)) continue;
+      // known ISP and no configured speed (verified against a real
+      // controller: an unused WAN slot reports 0/0 kbps capacity), unlike
+      // a real WAN that's simply down right now.
+      if (!ispName && !downKbps && !upKbps) continue;
 
-      wans.push({ name, ispName, uptimePercent, networkgroup: e?.configuration?.wan_networkgroup });
+      wans.push({
+        name,
+        ispName,
+        downMbps: downKbps ? Math.round(downKbps / 1000) : undefined,
+        upMbps: upKbps ? Math.round(upKbps / 1000) : undefined,
+        networkgroup: e?.configuration?.wan_networkgroup,
+      });
     }
     return wans;
   } catch {
@@ -172,10 +185,11 @@ export async function fetchUnifiData(
   const wan = healthBody.data?.find((s) => s.subsystem === "wan");
 
   const rawWans = await fetchWanProviders(base, prefix, site, headers, config.insecureTls);
-  const wans: UnifiWan[] = rawWans.map(({ name, ispName, uptimePercent, networkgroup }) => ({
+  const wans: UnifiWan[] = rawWans.map(({ name, ispName, downMbps, upMbps, networkgroup }) => ({
     name,
     ispName,
-    uptimePercent,
+    downMbps,
+    upMbps,
     up: networkgroup ? wanStatusByGroup[networkgroup] : undefined,
   }));
 

@@ -62,10 +62,12 @@ export default function UnifiDisplay({
                 <span className={`max-w-full truncate text-[11px] ${statusTone}`}>{wan.ispName ?? "Unknown ISP"}</span>
               </div>
             );
+            const speedLabel =
+              wan.downMbps != null && wan.upMbps != null ? `${wan.downMbps}/${wan.upMbps} Mbps (down/up)` : undefined;
             return (
               <div key={wan.name} className="min-w-0">
-                {wan.uptimePercent != null ? (
-                  <Tooltip label={`${wan.uptimePercent.toFixed(1)}% uptime`} className="w-full">
+                {speedLabel ? (
+                  <Tooltip label={speedLabel} className="w-full">
                     {body}
                   </Tooltip>
                 ) : (
