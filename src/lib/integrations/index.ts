@@ -18,6 +18,8 @@ import { fetchEnphaseData } from "./enphase";
 import { fetchNextcloudData } from "./nextcloud";
 import { fetchPingMonitorData } from "./pingMonitor";
 import { fetchPrinterData } from "./printer";
+import { fetchSynologyData } from "./synology";
+import { fetchHdhomerunData } from "./hdhomerun";
 
 /**
  * Dispatches to the right integration client based on widget type. Takes
@@ -64,5 +66,9 @@ export async function fetchWidgetData(widget: Widget, secrets: Record<string, st
       return fetchPingMonitorData(widget.config);
     case "printer-snmp":
       return fetchPrinterData(widget.config, secrets);
+    case "synology":
+      return fetchSynologyData(widget.config, secrets);
+    case "hdhomerun":
+      return fetchHdhomerunData(widget.config);
   }
 }

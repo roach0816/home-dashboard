@@ -109,6 +109,15 @@ const printerConfigSchema = z.object({
   host: z.string().min(1).max(300),
   port: z.number().int().min(1).max(65535).default(161),
 });
+const synologyConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl, insecureTls });
+const hdhomerunConfigSchema = z.object({
+  label,
+  refreshSeconds,
+  cardSize,
+  linkToDevice,
+  host: z.string().min(1).max(300),
+  port: z.number().int().min(1).max(65535).default(80),
+});
 
 export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("tempest-weather"), config: weatherWidgetConfigSchema }),
@@ -130,6 +139,8 @@ export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("nextcloud"), config: nextcloudConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("ping-monitor"), config: pingMonitorConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("printer-snmp"), config: printerConfigSchema }),
+  z.object({ id: z.string().min(1), type: z.literal("synology"), config: synologyConfigSchema }),
+  z.object({ id: z.string().min(1), type: z.literal("hdhomerun"), config: hdhomerunConfigSchema }),
 ]);
 
 export const dashboardDataSchema = z.object({

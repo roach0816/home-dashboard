@@ -20,15 +20,16 @@ the page can view and edit it.
   Falls back to an auto-fetched favicon, then a colored initial-letter
   avatar, if no icon is set.
 - Widgets: a row above the categories for live data, reorderable like
-  everything else. **+ Add widget** opens a searchable widget store with 19
+  everything else. **+ Add widget** opens a searchable widget store with 21
   built-in integrations — Tempest weather, Home Assistant, Proxmox VE,
   Kubernetes/Rancher, AdGuard Home, UniFi Network, Pi-hole, Portainer, Plex,
   Jellyfin, Sonarr, Radarr, TrueNAS, Uptime Kuma, Enphase Solar, an on-demand
-  internet speed test, Nextcloud, a generic host/port ping monitor, and a
+  internet speed test, Nextcloud, a generic host/port ping monitor, a
   network printer toner/ink monitor (SNMP, works with most networked
-  printers — Canon, Brother, HP, etc.). Each is configured with a small
-  connection form (host + credentials); more types can be added later by
-  extending the registry in `src/lib/widgets/registry.ts` (see
+  printers — Canon, Brother, HP, etc.), a Synology NAS storage monitor, and
+  an HDHomeRun tuner monitor. Each is configured with a small connection
+  form (host + credentials); more types can be added later by extending the
+  registry in `src/lib/widgets/registry.ts` (see
   [Adding a widget type](#adding-a-widget-type)).
 - Autosave (debounced) to a JSON file on disk — no database required
 - `/api/healthz` for Kubernetes probes
@@ -53,7 +54,7 @@ local caching of icon bytes.
 
 ## Widgets
 
-Edit mode → **+ Add widget** opens a store of 19 integrations. Picking one
+Edit mode → **+ Add widget** opens a store of 21 integrations. Picking one
 opens a small config form: a base URL plus whatever credentials that
 service needs (API key, username/password, or a token), plus a
 **Refresh interval** in seconds (defaults to 60s for fast-changing data

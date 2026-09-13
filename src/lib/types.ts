@@ -139,6 +139,17 @@ export type PrinterConfig = BaseWidgetConfig & {
   port: number;
 };
 
+export type SynologyConfig = BaseWidgetConfig & {
+  baseUrl: string;
+  insecureTls?: boolean;
+};
+
+export type HdhomerunConfig = BaseWidgetConfig & {
+  host: string;
+  /** HTTP API port, default 80. */
+  port: number;
+};
+
 export type Widget =
   | { id: string; type: "tempest-weather"; config: WeatherWidgetConfig }
   | { id: string; type: "home-assistant"; config: HomeAssistantConfig }
@@ -158,7 +169,9 @@ export type Widget =
   | { id: string; type: "speedtest"; config: SpeedtestConfig }
   | { id: string; type: "nextcloud"; config: NextcloudConfig }
   | { id: string; type: "ping-monitor"; config: PingMonitorConfig }
-  | { id: string; type: "printer-snmp"; config: PrinterConfig };
+  | { id: string; type: "printer-snmp"; config: PrinterConfig }
+  | { id: string; type: "synology"; config: SynologyConfig }
+  | { id: string; type: "hdhomerun"; config: HdhomerunConfig };
 
 export type WidgetTypeId = Widget["type"];
 

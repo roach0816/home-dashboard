@@ -27,6 +27,8 @@ import SpeedtestDisplay from "./widgets/displays/SpeedtestDisplay";
 import NextcloudDisplay from "./widgets/displays/NextcloudDisplay";
 import PingMonitorDisplay from "./widgets/displays/PingMonitorDisplay";
 import PrinterDisplay from "./widgets/displays/PrinterDisplay";
+import SynologyDisplay from "./widgets/displays/SynologyDisplay";
+import HdhomerunDisplay from "./widgets/displays/HdhomerunDisplay";
 
 type DisplayProps = { widget: Widget; compact: boolean; href?: string; icon?: string };
 
@@ -70,6 +72,10 @@ function WidgetDisplay({ widget, compact, href, icon }: DisplayProps) {
       return <PingMonitorDisplay widget={widget} compact={compact} href={href} icon={icon} />;
     case "printer-snmp":
       return <PrinterDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+    case "synology":
+      return <SynologyDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+    case "hdhomerun":
+      return <HdhomerunDisplay widget={widget} compact={compact} href={href} icon={icon} />;
   }
 }
 

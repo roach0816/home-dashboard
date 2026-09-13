@@ -288,6 +288,35 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
       },
     ],
   },
+  {
+    type: "synology",
+    linkField: "baseUrl",
+    defaultRefreshSeconds: 300,
+    name: "Synology NAS",
+    description: "Storage volume usage (used/total space) for a Synology DiskStation.",
+    icon: "selfhst:synology",
+    configFields: [
+      { key: "baseUrl", label: "Base URL", type: "url", placeholder: "https://synology.local:5001" },
+      insecureTlsField,
+    ],
+    secretFields: [
+      { key: "username", label: "Username" },
+      { key: "password", label: "Password" },
+    ],
+  },
+  {
+    type: "hdhomerun",
+    linkField: "host",
+    defaultRefreshSeconds: 60,
+    name: "HDHomeRun",
+    description: "Tuner count and how many are currently in use.",
+    icon: "selfhst:hdhomerun",
+    configFields: [
+      { key: "host", label: "Device IP/hostname", type: "text", placeholder: "192.168.1.60" },
+      { key: "port", label: "HTTP API port", type: "number", defaultValue: 80 },
+    ],
+    secretFields: [],
+  },
 ];
 
 export function getWidgetDefinition(type: WidgetTypeId): WidgetDefinition {
