@@ -51,11 +51,11 @@ export default function UnifiDisplay({
           className="grid gap-1 border-t border-border pt-2"
           style={{ gridTemplateColumns: `repeat(${data.wans.length}, minmax(0, 1fr))` }}
         >
-          {data.wans.map((wan) => {
+          {data.wans.map((wan, i) => {
             const statusTone = wan.up === false ? "text-red-400" : wan.up === true ? "text-emerald-500" : "text-muted";
             const body = (
               <div className="flex w-full flex-col items-center gap-0.5 text-center">
-                <span className="truncate text-[10px] font-medium text-muted">{wan.name}</span>
+                <span className="truncate text-[10px] font-medium text-muted">ISP {i + 1}</span>
                 <div className="flex h-6 w-6 items-center justify-center">
                   <WidgetLogo icon={ispIcon(wan.ispName)} size={22} />
                 </div>
