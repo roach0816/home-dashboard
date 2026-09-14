@@ -159,7 +159,7 @@ export default function AdguardConfigModal({
                   type="button"
                   onClick={() => setCardSize(opt.value)}
                   className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-                    cardSize === opt.value ? "bg-accent text-white" : "border border-border text-muted hover:text-foreground"
+                    cardSize === opt.value ? "bg-accent text-accent-foreground" : "border border-border text-muted hover:text-foreground"
                   }`}
                 >
                   {opt.label}
@@ -245,7 +245,7 @@ export default function AdguardConfigModal({
             type="button"
             disabled={!canSave || saving}
             onClick={handleSave}
-            className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white disabled:opacity-40"
+            className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground disabled:opacity-40"
           >
             {saving ? "Saving…" : "Save"}
           </button>

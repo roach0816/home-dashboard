@@ -13,6 +13,7 @@ const DATA_FILE = path.join(DATA_DIR, "dashboard.json");
 const seedData: StoredData = {
   title: "Home Dashboard",
   subtitle: "Home automation, network, and homelab links.",
+  theme: "default",
   widgets: [],
   widgetSecrets: {},
   categories: [
@@ -136,8 +137,8 @@ async function readRaw(): Promise<StoredData> {
 
 /** Client-facing read: strips the server-only secret store. */
 export async function readData(): Promise<DashboardData> {
-  const { title, subtitle, categories, widgets } = await readRaw();
-  return { title, subtitle, categories, widgets };
+  const { title, subtitle, theme, categories, widgets } = await readRaw();
+  return { title, subtitle, theme, categories, widgets };
 }
 
 export async function writeData(data: DashboardData): Promise<DashboardData> {

@@ -20,6 +20,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import type { Bookmark, Category, DashboardData, Widget, WidgetTypeId } from "@/lib/types";
+import type { ThemeId } from "@/lib/themes";
 import Column from "./Column";
 import BookmarkCard from "./BookmarkCard";
 import SettingsModal from "./SettingsModal";
@@ -51,6 +52,7 @@ export default function Dashboard({
   const [widgets, setWidgets] = useState<Widget[]>(initialData.widgets);
   const [title, setTitle] = useState(initialData.title);
   const [subtitle, setSubtitle] = useState(initialData.subtitle);
+  const [theme, setTheme] = useState<ThemeId>(initialData.theme);
   const [editing, setEditing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [storeOpen, setStoreOpen] = useState(false);
@@ -69,7 +71,7 @@ export default function Dashboard({
       fetch("/api/data", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, subtitle, categories, widgets }),
+        body: JSON.stringify({ title, subtitle, theme, categories, widgets }),
       })
         .then((res) => {
           if (!res.ok) throw new Error("save failed");
@@ -78,7 +80,13 @@ export default function Dashboard({
         .catch(() => setSaveState("error"));
     }, 500);
     return () => clearTimeout(timer);
-  }, [categories, widgets, title, subtitle]);
+  }, [categories, widgets, title, subtitle, theme]);
+
+  // Keep <html data-theme> in sync with live edits — the initial value is
+  // already set server-side (see layout.tsx) so there's no flash on load.
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -270,7 +278,7 @@ export default function Dashboard({
             onClick={() => setEditing((v) => !v)}
             className={`rounded-lg px-3.5 py-2 text-sm font-medium transition ${
               editing
-                ? "bg-accent text-white hover:bg-accent/90"
+                ? "bg-accent text-accent-foreground hover:bg-accent/90"
                 : "border border-border bg-surface-1 text-foreground hover:bg-surface-2"
             }`}
           >
@@ -283,9 +291,11 @@ export default function Dashboard({
         <SettingsModal
           title={title}
           subtitle={subtitle}
+          theme={theme}
           onSave={(values) => {
             setTitle(values.title);
             setSubtitle(values.subtitle);
+            setTheme(values.theme);
           }}
           onClose={() => setSettingsOpen(false)}
         />

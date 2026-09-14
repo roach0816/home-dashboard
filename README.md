@@ -13,7 +13,11 @@ the page can view and edit it.
 - Edit mode: add/rename/delete categories, add/edit/delete bookmarks
 - Drag-and-drop reordering of both categories and bookmarks (including
   across columns), via `@dnd-kit`
-- Settings (cog icon): edit the dashboard's title and subtitle
+- Settings (cog icon): edit the dashboard's title and subtitle, and pick a
+  theme — Default (follows your OS/browser light/dark preference) plus five
+  fixed-dark community palettes: Nord, Dracula, Catppuccin Mocha, Tokyo
+  Night, and Gruvbox. Applies instantly and is shared by everyone who opens
+  the dashboard, the same as the title/subtitle.
 - Per-bookmark icon picker: search Material Design Icons and thousands of
   app/brand logos (Home Assistant, Proxmox, Philips Hue, pfSense, etc.) via
   the [Iconify](https://iconify.design) API, or paste any custom image URL.

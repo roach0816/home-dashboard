@@ -101,7 +101,7 @@ export default function IconPicker({
               type="button"
               disabled={!customUrl.trim()}
               onClick={() => onSelect(customUrl.trim())}
-              className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white disabled:opacity-40"
+              className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground disabled:opacity-40"
             >
               Use
             </button>

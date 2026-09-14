@@ -66,7 +66,7 @@ export default function AdguardDisplay({
             type="button"
             onClick={() => setSelected("combined")}
             className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${
-              selected === "combined" ? "bg-accent text-white" : "bg-surface-3 text-muted hover:text-foreground"
+              selected === "combined" ? "bg-accent text-accent-foreground" : "bg-surface-3 text-muted hover:text-foreground"
             }`}
           >
             All
@@ -77,7 +77,7 @@ export default function AdguardDisplay({
               type="button"
               onClick={() => setSelected(node.id)}
               className={`truncate rounded px-1.5 py-0.5 text-[11px] font-medium ${
-                selected === node.id ? "bg-accent text-white" : "bg-surface-3 text-muted hover:text-foreground"
+                selected === node.id ? "bg-accent text-accent-foreground" : "bg-surface-3 text-muted hover:text-foreground"
               }`}
             >
               {node.label}

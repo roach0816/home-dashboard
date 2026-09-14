@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { THEME_IDS } from "@/lib/themes";
 
 export const bookmarkSchema = z.object({
   id: z.string().min(1),
@@ -146,6 +147,7 @@ export const widgetSchema = z.discriminatedUnion("type", [
 export const dashboardDataSchema = z.object({
   title: z.string().min(1).max(120).default("Home Dashboard"),
   subtitle: z.string().max(300).default(""),
+  theme: z.enum(THEME_IDS).default("default"),
   categories: z.array(categorySchema).max(50),
   widgets: z.array(widgetSchema).max(50).default([]),
 });

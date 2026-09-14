@@ -1,3 +1,5 @@
+import type { ThemeId } from "@/lib/themes";
+
 export type Bookmark = {
   id: string;
   title: string;
@@ -178,6 +180,7 @@ export type WidgetTypeId = Widget["type"];
 export type DashboardData = {
   title: string;
   subtitle: string;
+  theme: ThemeId;
   categories: Category[];
   widgets: Widget[];
 };
