@@ -37,6 +37,8 @@ export default function TempestConfigModal({
   const [forecastDays, setForecastDays] = useState(initial?.forecastDays ?? 4);
   const [refreshSeconds, setRefreshSeconds] = useState(initial?.refreshSeconds ?? 300);
   const [cardSize, setCardSize] = useState<WidgetCardSize>(initial?.cardSize ?? "full");
+  const [useLocal, setUseLocal] = useState(initial?.useLocal ?? false);
+  const [localSerial, setLocalSerial] = useState(initial?.localSerial ?? "");
   const [saving, setSaving] = useState(false);
 
   async function loadStations(token?: string) {
@@ -83,7 +85,17 @@ export default function TempestConfigModal({
       }).catch(() => {});
     }
     setSaving(false);
-    onSave({ stationId, label: label.trim() || undefined, unit, display, forecastDays, refreshSeconds, cardSize });
+    onSave({
+      stationId,
+      label: label.trim() || undefined,
+      unit,
+      display,
+      forecastDays,
+      refreshSeconds,
+      cardSize,
+      useLocal,
+      localSerial: localSerial.trim() || undefined,
+    });
   }
 
   const canSave = stationId != null;
@@ -240,6 +252,42 @@ export default function TempestConfigModal({
               </label>
             ))}
           </div>
+        </div>
+
+        <div className="rounded-md border border-border p-2.5">
+          <label className="flex items-center gap-2 text-sm text-foreground">
+            <input
+              type="checkbox"
+              checked={useLocal}
+              onChange={(e) => setUseLocal(e.target.checked)}
+              className="accent-accent"
+            />
+            Use local network for current conditions
+          </label>
+          <p className="mt-1 text-[11px] text-muted">
+            The Tempest Hub broadcasts current conditions over UDP on your local network (port 50222) —
+            faster than the cloud API, and current conditions keep working even if WeatherFlow&rsquo;s
+            servers are unreachable. Forecast still comes from the cloud either way. This only works if
+            those broadcasts actually reach the server this dashboard runs on — in a Kubernetes pod on a
+            typical overlay network, they usually don&rsquo;t unless the pod uses host networking.
+          </p>
+          {useLocal && (
+            <div className="mt-2">
+              <label className="mb-1 block text-xs font-medium text-muted">
+                Station serial number (optional)
+              </label>
+              <input
+                value={localSerial}
+                onChange={(e) => setLocalSerial(e.target.value)}
+                placeholder="ST-00012345"
+                className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+              />
+              <p className="mt-0.5 text-[11px] text-muted">
+                Only needed if more than one Tempest station is broadcasting on your network — otherwise
+                leave blank. Find it printed on the Hub, or in the Tempest app under station settings.
+              </p>
+            </div>
+          )}
         </div>
 
         {display !== "current" && (
