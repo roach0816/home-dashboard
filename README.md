@@ -58,9 +58,15 @@ Edit mode → **+ Add widget** opens a store of 21 integrations. Picking one
 opens a small config form: a base URL plus whatever credentials that
 service needs (API key, username/password, or a token), plus a
 **Refresh interval** in seconds (defaults to 60s for fast-changing data
-like Proxmox/Kubernetes/Plex, 300s for the rest) — every widget except the
-manually-triggered speed test polls on its own configured interval. Every
-widget also gets a **Test connection** button before you save, so a typo
+like Proxmox/Kubernetes/Plex, 300s for the rest). The server refreshes
+each widget's data in the background on that same interval and serves the
+cached result instantly, so data is already there the moment you load or
+switch back to the page — it never sits waiting on a live request, and a
+transient fetch failure doesn't wipe out the last known-good data (only a
+widget that's never successfully fetched shows an error). The
+manually-triggered speed test is the one exception, since it measures your
+own browser's connection. Every widget also gets a **Test connection**
+button before you save, so a typo
 doesn't just silently fail later, and every secret field has a show/hide
 toggle so you can actually verify what you typed.
 

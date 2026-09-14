@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getWidget, readWidgetSecrets } from "@/lib/store";
-import { fetchWidgetData } from "@/lib/integrations";
-import { describeError } from "@/lib/integrations/util";
+import { getWidget } from "@/lib/store";
+import { getWidgetData } from "@/lib/widgets/backgroundRefresh";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ widgetId: string }> }) {
   const { widgetId } = await params;
@@ -10,11 +9,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ wid
     return NextResponse.json({ error: "Widget not found" }, { status: 404 });
   }
 
-  const secrets = await readWidgetSecrets(widgetId);
-  try {
-    const data = await fetchWidgetData(widget, secrets);
-    return NextResponse.json(data);
-  } catch (err) {
-    return NextResponse.json({ error: describeError(err, "Failed to load widget data") }, { status: 502 });
+  const { data, error } = await getWidgetData(widget);
+  if (data === undefined) {
+    return NextResponse.json({ error: error ?? "Failed to load widget data" }, { status: 502 });
   }
+  return NextResponse.json(data);
 }
