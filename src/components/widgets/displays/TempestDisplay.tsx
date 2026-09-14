@@ -28,10 +28,6 @@ export default function TempestDisplay({
   const unitLabel = config.unit === "fahrenheit" ? "°F" : "°C";
   const showCurrent = config.display !== "forecast";
   const showForecast = config.display !== "current";
-  // Forecast always comes from the cloud API regardless of the local toggle,
-  // so "cloud" always applies; "lan" is added only when current conditions
-  // actually came from the local UDP broadcast this time around.
-  const currentSources: DataSource[] = data.current.source === "local" ? ["cloud", "lan"] : ["cloud"];
 
   return (
     <div className={`flex flex-col gap-2.5 ${compact ? "p-2.5" : "p-3.5"}`}>
@@ -52,7 +48,7 @@ export default function TempestDisplay({
               <p className="truncate text-sm font-medium text-foreground">{label}</p>
             )}
           </div>
-          <SourceIcons sources={showCurrent ? currentSources : sources} />
+          <SourceIcons sources={sources} />
         </div>
         {showCurrent && (
           // Doubles as this widget's "logo" corner — the live conditions icon is more

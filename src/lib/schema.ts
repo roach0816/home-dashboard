@@ -29,8 +29,6 @@ const weatherWidgetConfigSchema = z.object({
   unit: z.enum(["fahrenheit", "celsius"]).default("fahrenheit"),
   display: z.enum(["full", "current", "forecast"]).default("full"),
   forecastDays: z.number().int().min(1).max(10).default(4),
-  useLocal: z.boolean().optional(),
-  localSerial: z.string().max(100).optional(),
 });
 
 const homeAssistantConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl, insecureTls });

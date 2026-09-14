@@ -99,18 +99,6 @@ click **Load stations**, pick yours. You can also choose what the widget
 shows (full details / current conditions only / forecast only) and how
 many days of forecast to display.
 
-Optionally, turn on **Use local network for current conditions** to have
-current conditions (temperature, humidity, wind) come from the Tempest
-Hub's own UDP broadcast (port 50222) on your local network instead of
-WeatherFlow's cloud API — faster, and keeps working even if the cloud API
-is briefly unreachable. Forecast data has no local equivalent, so it still
-comes from the cloud either way. This needs the broadcast to actually reach
-wherever the dashboard's server process runs; the provided
-[deployment.yaml](deploy/k8s/deployment.yaml) runs the pod with
-`hostNetwork: true` for this reason — a typical overlay CNI (Flannel, etc.)
-doesn't forward LAN broadcast traffic into the pod network otherwise, so
-this widget's local mode requires stepping outside that overlay.
-
 ### Adding a widget type
 
 1. Add its config shape to the `Widget` union in `src/lib/types.ts` and a

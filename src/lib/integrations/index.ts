@@ -1,6 +1,6 @@
 import "server-only";
 import type { Widget } from "@/lib/types";
-import { fetchTempestWidgetData } from "./tempest";
+import { fetchTempestWidgetData } from "@/lib/tempest";
 import { fetchHomeAssistantData } from "./homeAssistant";
 import { fetchProxmoxData } from "./proxmox";
 import { fetchKubernetesData } from "./kubernetes";

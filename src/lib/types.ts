@@ -45,10 +45,6 @@ export type WeatherWidgetConfig = BaseWidgetConfig & {
   unit: "fahrenheit" | "celsius";
   display: WeatherDisplayMode;
   forecastDays: number;
-  /** Prefer the Tempest Hub's local UDP broadcast (port 50222) for current conditions, falling back to the cloud API. */
-  useLocal?: boolean;
-  /** Only needed when more than one Tempest station is broadcasting on the local network. */
-  localSerial?: string;
 };
 
 export type HomeAssistantConfig = BaseWidgetConfig & {
