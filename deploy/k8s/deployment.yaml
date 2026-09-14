@@ -17,6 +17,12 @@ spec:
       labels:
         app: home-dashboard
     spec:
+      # Binds the pod directly to its node's network namespace instead of
+      # Flannel's overlay, so it can receive LAN broadcast traffic (e.g. the
+      # Tempest Hub's UDP current-conditions broadcasts on port 50222) —
+      # overlay CNIs don't forward broadcast/multicast from the physical LAN.
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: home-dashboard
           # Pinned to a commit SHA (not :latest) and kept in sync by CI — see

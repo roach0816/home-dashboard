@@ -268,8 +268,9 @@ export default function TempestConfigModal({
             The Tempest Hub broadcasts current conditions over UDP on your local network (port 50222) —
             faster than the cloud API, and current conditions keep working even if WeatherFlow&rsquo;s
             servers are unreachable. Forecast still comes from the cloud either way. This only works if
-            those broadcasts actually reach the server this dashboard runs on — in a Kubernetes pod on a
-            typical overlay network, they usually don&rsquo;t unless the pod uses host networking.
+            those broadcasts actually reach the server this dashboard runs on and your Tempest Hub is on
+            the same local network. Look for the LAN icon next to the widget&rsquo;s title to confirm
+            it&rsquo;s actually being used.
           </p>
           {useLocal && (
             <div className="mt-2">

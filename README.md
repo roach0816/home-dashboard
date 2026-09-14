@@ -105,10 +105,11 @@ Hub's own UDP broadcast (port 50222) on your local network instead of
 WeatherFlow's cloud API — faster, and keeps working even if the cloud API
 is briefly unreachable. Forecast data has no local equivalent, so it still
 comes from the cloud either way. This needs the broadcast to actually reach
-wherever the dashboard's server process runs; in a Kubernetes pod on a
-typical overlay network (Flannel, etc.) it generally won't unless that
-pod runs with `hostNetwork: true`, since LAN broadcast traffic doesn't
-cross into the pod network otherwise.
+wherever the dashboard's server process runs; the provided
+[deployment.yaml](deploy/k8s/deployment.yaml) runs the pod with
+`hostNetwork: true` for this reason — a typical overlay CNI (Flannel, etc.)
+doesn't forward LAN broadcast traffic into the pod network otherwise, so
+this widget's local mode requires stepping outside that overlay.
 
 ### Adding a widget type
 
