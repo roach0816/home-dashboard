@@ -4,7 +4,7 @@ import type { Widget } from "@/lib/types";
 import type { KubernetesData } from "@/lib/integrations/kubernetes";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
 import { formatBytes } from "@/lib/format";
-import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
+import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine, type DataSource } from "../primitives";
 
 function percentOf(used: number, total: number): number {
   return total > 0 ? Math.round((used / total) * 100) : 0;
@@ -15,17 +15,19 @@ export default function KubernetesDisplay({
   compact,
   href,
   icon,
+  sources,
 }: {
   widget: Extract<Widget, { type: "kubernetes" }>;
   compact?: boolean;
   href?: string;
   icon?: string;
+  sources?: DataSource[];
 }) {
   const label = widget.config.label || "Kubernetes";
   const { data, error } = useWidgetData<KubernetesData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} sources={sources} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} sources={sources} />;
 
   const hasUsage = data.cpuUsedCores != null && data.memUsedBytes != null;
   const cpuPercent = hasUsage
@@ -39,7 +41,7 @@ export default function KubernetesDisplay({
 
   if (compact) {
     return (
-      <WidgetFrame label={label} compact href={href} icon={icon}>
+      <WidgetFrame label={label} compact href={href} icon={icon} sources={sources}>
         <StatRow
           compact
           items={[
@@ -53,7 +55,7 @@ export default function KubernetesDisplay({
   }
 
   return (
-    <WidgetFrame label={label} href={href} icon={icon}>
+    <WidgetFrame label={label} href={href} icon={icon} sources={sources}>
       <StatRow
         items={[
           { value: `${data.nodesReady}/${data.nodeCount}`, caption: "nodes ready" },

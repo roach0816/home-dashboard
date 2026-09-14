@@ -4,28 +4,30 @@ import type { Widget } from "@/lib/types";
 import type { ProxmoxData } from "@/lib/integrations/proxmox";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
 import { formatBytes } from "@/lib/format";
-import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
+import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine, type DataSource } from "../primitives";
 
 export default function ProxmoxDisplay({
   widget,
   compact,
   href,
   icon,
+  sources,
 }: {
   widget: Extract<Widget, { type: "proxmox" }>;
   compact?: boolean;
   href?: string;
   icon?: string;
+  sources?: DataSource[];
 }) {
   const label = widget.config.label || "Proxmox VE";
   const { data, error } = useWidgetData<ProxmoxData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} sources={sources} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} sources={sources} />;
 
   if (compact) {
     return (
-      <WidgetFrame label={label} compact href={href} icon={icon}>
+      <WidgetFrame label={label} compact href={href} icon={icon} sources={sources}>
         <StatRow
           compact
           items={[
@@ -39,7 +41,7 @@ export default function ProxmoxDisplay({
   }
 
   return (
-    <WidgetFrame label={label} href={href} icon={icon}>
+    <WidgetFrame label={label} href={href} icon={icon} sources={sources}>
       <StatRow
         items={[
           { value: data.nodeCount, caption: "nodes" },

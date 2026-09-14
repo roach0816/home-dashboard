@@ -3,7 +3,7 @@
 import type { Widget } from "@/lib/types";
 import type { PingMonitorData } from "@/lib/integrations/pingMonitor";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
-import { WidgetLoading, WidgetError, StatusLine } from "../primitives";
+import { WidgetLoading, WidgetError, StatusLine, SourceIcons, type DataSource } from "../primitives";
 import WidgetLogo from "../WidgetLogo";
 
 export default function PingMonitorDisplay({
@@ -11,17 +11,19 @@ export default function PingMonitorDisplay({
   compact,
   href,
   icon,
+  sources,
 }: {
   widget: Extract<Widget, { type: "ping-monitor" }>;
   compact?: boolean;
   href?: string;
   icon?: string;
+  sources?: DataSource[];
 }) {
   const label = widget.config.label || widget.config.host;
   const { data, error } = useWidgetData<PingMonitorData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} sources={sources} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} sources={sources} />;
 
   return (
     <div className={`flex flex-col gap-2 ${compact ? "p-2.5" : "p-3.5"}`}>
@@ -41,6 +43,7 @@ export default function PingMonitorDisplay({
             <p className="truncate text-sm font-medium text-foreground">{label}</p>
           )}
         </div>
+        <SourceIcons sources={sources} />
         <WidgetLogo icon={icon} size={24} className="opacity-80" />
         <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${data.up ? "bg-emerald-500" : "bg-red-400"}`} />
       </div>

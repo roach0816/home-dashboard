@@ -4,7 +4,7 @@ import type { Widget } from "@/lib/types";
 import type { UnifiData } from "@/lib/integrations/unifi";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
 import { ispIcon } from "@/lib/ispIcons";
-import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine } from "../primitives";
+import { WidgetFrame, WidgetLoading, WidgetError, StatRow, StatusLine, type DataSource } from "../primitives";
 import WidgetLogo from "../WidgetLogo";
 import Tooltip from "../Tooltip";
 
@@ -13,17 +13,19 @@ export default function UnifiDisplay({
   compact,
   href,
   icon,
+  sources,
 }: {
   widget: Extract<Widget, { type: "unifi" }>;
   compact?: boolean;
   href?: string;
   icon?: string;
+  sources?: DataSource[];
 }) {
   const label = widget.config.label || "UniFi Network";
   const { data, error } = useWidgetData<UnifiData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} sources={sources} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} sources={sources} />;
 
   const wanOk = data.wanStatus === "ok";
   const allDevicesOnline = data.devicesOnline === data.deviceCount;

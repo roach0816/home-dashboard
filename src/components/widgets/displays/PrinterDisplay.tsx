@@ -3,27 +3,29 @@
 import type { Widget } from "@/lib/types";
 import type { PrinterData } from "@/lib/integrations/printer";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
-import { WidgetFrame, WidgetLoading, WidgetError } from "../primitives";
+import { WidgetFrame, WidgetLoading, WidgetError, type DataSource } from "../primitives";
 
 export default function PrinterDisplay({
   widget,
   compact,
   href,
   icon,
+  sources,
 }: {
   widget: Extract<Widget, { type: "printer-snmp" }>;
   compact?: boolean;
   href?: string;
   icon?: string;
+  sources?: DataSource[];
 }) {
   const label = widget.config.label || "Printer";
   const { data, error } = useWidgetData<PrinterData>(widget.id, (widget.config.refreshSeconds ?? 300) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} sources={sources} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} sources={sources} />;
 
   return (
-    <WidgetFrame label={label} compact={compact} href={href} icon={icon}>
+    <WidgetFrame label={label} compact={compact} href={href} icon={icon} sources={sources}>
       {data.supplies.length === 0 ? (
         <p className="text-xs text-muted">No supply data reported.</p>
       ) : compact ? (

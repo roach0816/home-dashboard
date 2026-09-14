@@ -3,50 +3,56 @@
 import type { Widget } from "@/lib/types";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
 import { weatherEmoji } from "@/lib/weatherIcons";
-import { WidgetLoading, WidgetError } from "../primitives";
+import { WidgetLoading, WidgetError, SourceIcons, type DataSource } from "../primitives";
 import type { TempestForecast } from "@/lib/tempest";
 
 export default function TempestDisplay({
   widget,
   compact,
   href,
+  sources,
 }: {
   widget: Extract<Widget, { type: "tempest-weather" }>;
   compact?: boolean;
   href?: string;
   icon?: string;
+  sources?: DataSource[];
 }) {
   const { config } = widget;
   const { data, error } = useWidgetData<TempestForecast>(widget.id, (config.refreshSeconds ?? 300) * 1000);
   const label = config.label || data?.cityState || data?.locationName || "Tempest station";
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} href={href} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} sources={sources} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} sources={sources} />;
 
   const unitLabel = config.unit === "fahrenheit" ? "°F" : "°C";
   const showCurrent = config.display !== "forecast";
   const showForecast = config.display !== "current";
+  // Forecast always comes from the cloud API regardless of the local toggle,
+  // so "cloud" always applies; "lan" is added only when current conditions
+  // actually came from the local UDP broadcast this time around.
+  const currentSources: DataSource[] = data.current.source === "local" ? ["cloud", "lan"] : ["cloud"];
 
   return (
     <div className={`flex flex-col gap-2.5 ${compact ? "p-2.5" : "p-3.5"}`}>
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          {href ? (
-            <a
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="block truncate text-sm font-medium text-foreground hover:underline"
-            >
-              {label}
-            </a>
-          ) : (
-            <p className="truncate text-sm font-medium text-foreground">{label}</p>
-          )}
-          {showCurrent && !compact && data.current.conditions && (
-            <p className="truncate text-xs text-muted">{data.current.conditions}</p>
-          )}
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
+          <div className="min-w-0 flex-1">
+            {href ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="block truncate text-sm font-medium text-foreground hover:underline"
+              >
+                {label}
+              </a>
+            ) : (
+              <p className="truncate text-sm font-medium text-foreground">{label}</p>
+            )}
+          </div>
+          <SourceIcons sources={showCurrent ? currentSources : sources} />
         </div>
         {showCurrent && (
           // Doubles as this widget's "logo" corner — the live conditions icon is more
@@ -56,42 +62,27 @@ export default function TempestDisplay({
           </span>
         )}
       </div>
+      {showCurrent && !compact && data.current.conditions && (
+        <p className="-mt-1.5 truncate text-xs text-muted">{data.current.conditions}</p>
+      )}
 
       {showCurrent && (
-        <>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-semibold text-foreground">
-              {Math.round(data.current.temperature)}
-              {unitLabel}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xl font-semibold text-foreground">
+            {Math.round(data.current.temperature)}
+            {unitLabel}
+          </span>
+          <div className="flex flex-col items-end gap-0.5 text-right text-xs text-muted">
+            <span>
+              feels {Math.round(data.current.feelsLike)}
+              {unitLabel} · {data.current.humidity}% humidity
             </span>
-            {config.useLocal && (
-              <span
-                className={`shrink-0 text-[10px] font-medium ${
-                  data.current.source === "local" ? "text-emerald-500" : "text-muted"
-                }`}
-                title={
-                  data.current.source === "local"
-                    ? "Current conditions from the Tempest Hub's local UDP broadcast"
-                    : "Local broadcast not received — showing WeatherFlow's cloud data instead"
-                }
-              >
-                {data.current.source === "local" ? "● Local" : "○ Cloud"}
-              </span>
-            )}
-            {!compact && (
-              <span className="text-xs text-muted">
-                feels {Math.round(data.current.feelsLike)}
-                {unitLabel} · {data.current.humidity}% humidity
-              </span>
-            )}
-          </div>
-          {!compact && (
-            <p className="text-xs text-muted">
+            <span>
               {Math.round(data.current.windSpeed)} {config.unit === "fahrenheit" ? "mph" : "km/h"}{" "}
               {data.current.windDirectionCardinal}
-            </p>
-          )}
-        </>
+            </span>
+          </div>
+        </div>
       )}
 
       {showForecast && data.daily.length > 0 && (

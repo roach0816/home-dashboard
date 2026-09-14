@@ -37,6 +37,8 @@ export type WidgetDefinition = {
    * nothing sensible to link to (weather, speed test).
    */
   linkField?: string;
+  /** Data source(s) shown as small icons next to the title. Tempest overrides this dynamically at render time. */
+  sources: Array<"cloud" | "lan">;
 };
 
 const insecureTlsField: ConfigFieldSpec = {
@@ -49,6 +51,7 @@ const insecureTlsField: ConfigFieldSpec = {
 export const WIDGET_REGISTRY: WidgetDefinition[] = [
   {
     type: "tempest-weather",
+    sources: ["cloud"],
     defaultRefreshSeconds: 300,
     name: "Tempest Weather Station",
     description: "Current conditions and forecast from your own WeatherFlow Tempest station.",
@@ -59,6 +62,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "home-assistant",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Home Assistant",
@@ -69,6 +73,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "proxmox",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Proxmox VE",
@@ -90,6 +95,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "kubernetes",
+    sources: ["lan"],
     linkField: "rancherUrl",
     defaultRefreshSeconds: 60,
     name: "Kubernetes / Rancher",
@@ -112,6 +118,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "adguard",
+    sources: ["lan"],
     defaultRefreshSeconds: 300,
     name: "AdGuard Home",
     description: "Queries and percent blocked across one or more AdGuard Home instances, combined or individually.",
@@ -122,6 +129,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "unifi",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "UniFi Network",
@@ -139,6 +147,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "pihole",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Pi-hole",
@@ -149,6 +158,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "portainer",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Portainer",
@@ -159,6 +169,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "plex",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Plex",
@@ -169,6 +180,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "jellyfin",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Jellyfin",
@@ -179,6 +191,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "sonarr",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Sonarr",
@@ -192,6 +205,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "radarr",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Radarr",
@@ -205,6 +219,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "truenas",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "TrueNAS",
@@ -215,6 +230,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "uptime-kuma",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Uptime Kuma",
@@ -225,6 +241,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "enphase",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 60,
     name: "Enphase Solar",
@@ -235,6 +252,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "speedtest",
+    sources: ["cloud"],
     name: "Internet Speed Test",
     description: "On-demand download/upload/latency test (Cloudflare, no account needed).",
     icon: "mdi:speedometer",
@@ -243,6 +261,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "nextcloud",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Nextcloud",
@@ -256,6 +275,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "ping-monitor",
+    sources: ["lan"],
     linkField: "host",
     defaultRefreshSeconds: 60,
     name: "Ping / Port Monitor",
@@ -269,6 +289,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "printer-snmp",
+    sources: ["lan"],
     linkField: "host",
     defaultRefreshSeconds: 300,
     name: "Network Printer",
@@ -290,6 +311,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "synology",
+    sources: ["lan"],
     linkField: "baseUrl",
     defaultRefreshSeconds: 300,
     name: "Synology NAS",
@@ -306,6 +328,7 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
   },
   {
     type: "hdhomerun",
+    sources: ["lan"],
     linkField: "host",
     defaultRefreshSeconds: 60,
     name: "HDHomeRun",

@@ -3,27 +3,29 @@
 import type { Widget } from "@/lib/types";
 import type { EnphaseData } from "@/lib/integrations/enphase";
 import { useWidgetData } from "@/lib/widgets/useWidgetData";
-import { WidgetFrame, WidgetLoading, WidgetError, StatRow } from "../primitives";
+import { WidgetFrame, WidgetLoading, WidgetError, StatRow, type DataSource } from "../primitives";
 
 export default function EnphaseDisplay({
   widget,
   compact,
   href,
   icon,
+  sources,
 }: {
   widget: Extract<Widget, { type: "enphase" }>;
   compact?: boolean;
   href?: string;
   icon?: string;
+  sources?: DataSource[];
 }) {
   const label = widget.config.label || "Enphase Solar";
   const { data, error } = useWidgetData<EnphaseData>(widget.id, (widget.config.refreshSeconds ?? 60) * 1000);
 
-  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} />;
-  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} />;
+  if (error) return <WidgetError label={label} error={error} compact={compact} href={href} icon={icon} sources={sources} />;
+  if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} sources={sources} />;
 
   return (
-    <WidgetFrame label={label} compact={compact} href={href} icon={icon}>
+    <WidgetFrame label={label} compact={compact} href={href} icon={icon} sources={sources}>
       <StatRow
         compact={compact}
         items={[

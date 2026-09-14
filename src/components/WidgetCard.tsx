@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Widget } from "@/lib/types";
+import type { DataSource } from "./widgets/primitives";
 import { getWidgetDefinition } from "@/lib/widgets/registry";
 import GenericWidgetConfigModal from "./widgets/GenericWidgetConfigModal";
 import TempestConfigModal from "./widgets/TempestConfigModal";
@@ -30,52 +31,52 @@ import PrinterDisplay from "./widgets/displays/PrinterDisplay";
 import SynologyDisplay from "./widgets/displays/SynologyDisplay";
 import HdhomerunDisplay from "./widgets/displays/HdhomerunDisplay";
 
-type DisplayProps = { widget: Widget; compact: boolean; href?: string; icon?: string };
+type DisplayProps = { widget: Widget; compact: boolean; href?: string; icon?: string; sources?: DataSource[] };
 
-function WidgetDisplay({ widget, compact, href, icon }: DisplayProps) {
+function WidgetDisplay({ widget, compact, href, icon, sources }: DisplayProps) {
   switch (widget.type) {
     case "tempest-weather":
-      return <TempestDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <TempestDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "home-assistant":
-      return <HomeAssistantDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <HomeAssistantDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "proxmox":
-      return <ProxmoxDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <ProxmoxDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "kubernetes":
-      return <KubernetesDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <KubernetesDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "adguard":
-      return <AdguardDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <AdguardDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "unifi":
-      return <UnifiDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <UnifiDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "pihole":
-      return <PiholeDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <PiholeDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "portainer":
-      return <PortainerDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <PortainerDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "plex":
-      return <PlexDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <PlexDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "jellyfin":
-      return <JellyfinDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <JellyfinDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "sonarr":
-      return <SonarrDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <SonarrDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "radarr":
-      return <RadarrDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <RadarrDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "truenas":
-      return <TruenasDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <TruenasDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "uptime-kuma":
-      return <UptimeKumaDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <UptimeKumaDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "enphase":
-      return <EnphaseDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <EnphaseDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "speedtest":
-      return <SpeedtestDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <SpeedtestDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "nextcloud":
-      return <NextcloudDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <NextcloudDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "ping-monitor":
-      return <PingMonitorDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <PingMonitorDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "printer-snmp":
-      return <PrinterDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <PrinterDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "synology":
-      return <SynologyDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <SynologyDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "hdhomerun":
-      return <HdhomerunDisplay widget={widget} compact={compact} href={href} icon={icon} />;
+      return <HdhomerunDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
   }
 }
 
@@ -158,7 +159,13 @@ export default function WidgetCard({
         </div>
       )}
 
-      <WidgetDisplay widget={widget} compact={compact} href={href} icon={definition.icon} />
+      <WidgetDisplay
+        widget={widget}
+        compact={compact}
+        href={href}
+        icon={definition.icon}
+        sources={definition.sources}
+      />
 
       {configuring && widget.type === "tempest-weather" && (
         <TempestConfigModal
