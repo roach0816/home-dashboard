@@ -1,10 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 
 // Must match the CSS animation-duration for .animate-modal-panel-out in globals.css.
 const CLOSE_ANIMATION_MS = 150;
+
+// "Is this running on the client yet" as an external-store subscription —
+// document doesn't exist during SSR, and portalling before hydration would
+// mismatch the server-rendered tree. There's nothing to actually subscribe
+// to (this never changes after the first client render), so the
+// subscribe function is a no-op.
+function subscribeNoop() {
+  return () => {};
+}
+function useMounted(): boolean {
+  return useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
+}
 
 export default function Modal({
   title,
@@ -18,6 +35,9 @@ export default function Modal({
   widthClass?: string;
 }) {
   const [closing, setClosing] = useState(false);
+  // Portal to document.body once mounted (client-only — avoids an SSR
+  // mismatch, and document doesn't exist during server rendering anyway).
+  const mounted = useMounted();
 
   function requestClose() {
     if (closing) return;
@@ -34,7 +54,9 @@ export default function Modal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [closing]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 ${
         closing ? "animate-modal-backdrop-out" : "animate-modal-backdrop"
@@ -62,6 +84,7 @@ export default function Modal({
         </div>
         <div className="overflow-y-auto p-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
