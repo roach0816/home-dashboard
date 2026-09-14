@@ -26,7 +26,7 @@ export default function PingMonitorDisplay({
   if (!data) return <WidgetLoading label={label} compact={compact} href={href} icon={icon} sources={sources} />;
 
   return (
-    <div className={`flex flex-col gap-2 ${compact ? "p-2.5" : "p-3.5"}`}>
+    <div className={`animate-widget-in flex flex-col gap-2 ${compact ? "p-2.5" : "p-3.5"}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           {href ? (

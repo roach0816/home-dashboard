@@ -98,6 +98,14 @@ body {
   animation: fade-in-up 0.35s ease-out both;
 }
 
+/* Widgets swap between loading/error/loaded states by mounting a fresh
+   element tree each time (different branches of a widget's own render),
+   so this fires once per state transition rather than fighting a poll
+   that just updates props in place. */
+.animate-widget-in {
+  animation: fade-in 0.25s ease-out both;
+}
+
 .animate-modal-backdrop {
   animation: fade-in 0.15s ease-out both;
 }
@@ -116,6 +124,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-page-in,
+  .animate-widget-in,
   .animate-modal-backdrop,
   .animate-modal-backdrop-out,
   .animate-modal-panel,
