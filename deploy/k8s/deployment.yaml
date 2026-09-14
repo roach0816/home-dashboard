@@ -37,6 +37,14 @@ spec:
           env:
             - name: DATA_DIR
               value: /app/data
+            # hostNetwork: true makes Kubernetes set this pod's hostname to
+            # the node's hostname, which the container runtime then injects
+            # as $HOSTNAME. Next's standalone server binds to $HOSTNAME
+            # verbatim when it's set (falling back to 0.0.0.0 otherwise),
+            # so without this override it tries to bind to the node's
+            # hostname instead of all interfaces and nothing can reach it.
+            - name: HOSTNAME
+              value: "0.0.0.0"
           volumeMounts:
             - name: data
               mountPath: /app/data
