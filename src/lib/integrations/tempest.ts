@@ -31,6 +31,7 @@ function currentFromLocal(obs: LocalObservation, unit: "fahrenheit" | "celsius",
     humidity: obs.relativeHumidity,
     windSpeed,
     windDirectionCardinal: degreesToCardinal(obs.windDirectionDeg),
+    source: "local",
   };
 }
 

@@ -12,6 +12,8 @@ export type TempestCurrent = {
   humidity: number;
   windSpeed: number;
   windDirectionCardinal: string;
+  /** Where this reading came from — the Hub's local UDP broadcast, or WeatherFlow's cloud API. */
+  source: "local" | "cloud";
 };
 
 export type TempestDaily = {
@@ -119,6 +121,7 @@ export async function fetchBetterForecast(
       humidity: Number(cc.relative_humidity),
       windSpeed: Number(cc.wind_avg),
       windDirectionCardinal: String(cc.wind_direction_cardinal ?? ""),
+      source: "cloud",
     },
     daily: dailyRaw.slice(0, days).map((d) => ({
       date: new Date(Number(d.day_start_local) * 1000).toISOString().slice(0, 10),

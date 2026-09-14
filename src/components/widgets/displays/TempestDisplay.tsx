@@ -64,6 +64,20 @@ export default function TempestDisplay({
               {Math.round(data.current.temperature)}
               {unitLabel}
             </span>
+            {config.useLocal && (
+              <span
+                className={`shrink-0 text-[10px] font-medium ${
+                  data.current.source === "local" ? "text-emerald-500" : "text-muted"
+                }`}
+                title={
+                  data.current.source === "local"
+                    ? "Current conditions from the Tempest Hub's local UDP broadcast"
+                    : "Local broadcast not received — showing WeatherFlow's cloud data instead"
+                }
+              >
+                {data.current.source === "local" ? "● Local" : "○ Cloud"}
+              </span>
+            )}
             {!compact && (
               <span className="text-xs text-muted">
                 feels {Math.round(data.current.feelsLike)}
