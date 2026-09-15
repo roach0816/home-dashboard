@@ -37,6 +37,7 @@ export default function UnifiDisplay({
       compact={compact}
       href={href}
       icon={icon}
+      sources={sources}
       warning={data.deviceCount > 0 && !allDevicesOnline ? `${offlineCount} UniFi device(s) offline` : undefined}
     >
       <StatRow
