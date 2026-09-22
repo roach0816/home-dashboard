@@ -58,7 +58,7 @@ local caching of icon bytes.
 
 ## Widgets
 
-Edit mode → **+ Add widget** opens a store of 21 integrations. Picking one
+Edit mode → **+ Add widget** opens a store of 22 integrations. Picking one
 opens a small config form: a base URL plus whatever credentials that
 service needs (API key, username/password, or a token), plus a
 **Refresh interval** in seconds (defaults to 60s for fast-changing data
@@ -100,6 +100,14 @@ widget is the one exception — it runs entirely in your browser against
 Cloudflare's public speed-test endpoint, no credentials or server call
 involved, and only runs when you click "Run test" (not on the usual
 5-minute auto-refresh, so it doesn't burn bandwidth in the background).
+
+**MLB Scoreboard** needs no credentials — it's MLB's own public Stats API.
+Pick a team and it shows a live score when your team is playing, otherwise
+its last final score. Before noon Eastern that's yesterday's (or the most
+recent) final; at noon it switches to the next scheduled game instead,
+since a stale final becomes less useful than "who's up next" once the day
+gets going. The noon cutover is fixed to Eastern time regardless of the
+server's own clock/timezone.
 
 **Tempest weather** gets a bespoke config screen instead of the generic
 form, because picking a station benefits from a live dropdown: paste a

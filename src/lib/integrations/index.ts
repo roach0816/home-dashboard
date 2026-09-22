@@ -20,6 +20,7 @@ import { fetchPingMonitorData } from "./pingMonitor";
 import { fetchPrinterData } from "./printer";
 import { fetchSynologyData } from "./synology";
 import { fetchHdhomerunData } from "./hdhomerun";
+import { fetchMlbTeamData } from "./mlb";
 
 /**
  * Dispatches to the right integration client based on widget type. Takes
@@ -70,5 +71,7 @@ export async function fetchWidgetData(widget: Widget, secrets: Record<string, st
       return fetchSynologyData(widget.config, secrets);
     case "hdhomerun":
       return fetchHdhomerunData(widget.config);
+    case "mlb-team":
+      return fetchMlbTeamData(widget.config);
   }
 }

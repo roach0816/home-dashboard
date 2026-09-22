@@ -1,14 +1,17 @@
 import type { WidgetTypeId } from "@/lib/types";
+import { MLB_TEAMS } from "@/lib/mlbTeams";
 
 export type ConfigFieldSpec = {
   key: string;
   label: string;
-  type: "text" | "url" | "number" | "checkbox";
+  type: "text" | "url" | "number" | "checkbox" | "select";
   placeholder?: string;
   helpText?: string;
   defaultValue?: string | number | boolean;
   /** When true, the field isn't required to save the widget (e.g. an optional link-only URL). */
   optional?: boolean;
+  /** Required when type is "select" — value can be a number (e.g. an id) or a string. */
+  options?: Array<{ value: string | number; label: string }>;
 };
 
 export type SecretFieldSpec = {
@@ -337,6 +340,25 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
     configFields: [
       { key: "host", label: "Device IP/hostname", type: "text", placeholder: "192.168.1.60" },
       { key: "port", label: "HTTP API port", type: "number", defaultValue: 80 },
+    ],
+    secretFields: [],
+  },
+  {
+    type: "mlb-team",
+    sources: ["cloud"],
+    defaultRefreshSeconds: 60,
+    name: "MLB Scoreboard",
+    description:
+      "Live score for one MLB team, falling back to its last final score before noon and its next scheduled game after — via MLB's public Stats API, no key needed.",
+    icon: "mdi:baseball",
+    configFields: [
+      {
+        key: "teamId",
+        label: "Team",
+        type: "select",
+        defaultValue: 114,
+        options: MLB_TEAMS.map((t) => ({ value: t.id, label: t.name })),
+      },
     ],
     secretFields: [],
   },

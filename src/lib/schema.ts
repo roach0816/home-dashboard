@@ -119,6 +119,12 @@ const hdhomerunConfigSchema = z.object({
   host: z.string().min(1).max(300),
   port: z.number().int().min(1).max(65535).default(80),
 });
+const mlbTeamConfigSchema = z.object({
+  label,
+  refreshSeconds,
+  cardSize,
+  teamId: z.number().int().positive(),
+});
 
 export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("tempest-weather"), config: weatherWidgetConfigSchema }),
@@ -142,6 +148,7 @@ export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("printer-snmp"), config: printerConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("synology"), config: synologyConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("hdhomerun"), config: hdhomerunConfigSchema }),
+  z.object({ id: z.string().min(1), type: z.literal("mlb-team"), config: mlbTeamConfigSchema }),
 ]);
 
 export const dashboardDataSchema = z.object({

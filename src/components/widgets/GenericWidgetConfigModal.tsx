@@ -187,6 +187,28 @@ export default function GenericWidgetConfigModal({
               {field.label}
               {field.helpText && <span className="text-xs text-muted">({field.helpText})</span>}
             </label>
+          ) : field.type === "select" ? (
+            <div key={field.key}>
+              <label className="mb-1 block text-xs font-medium text-muted">{field.label}</label>
+              <select
+                value={String(configValues[field.key] ?? "")}
+                onChange={(e) => {
+                  const opt = field.options?.find((o) => String(o.value) === e.target.value);
+                  setField(field.key, opt ? opt.value : e.target.value);
+                }}
+                className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+              >
+                <option value="" disabled>
+                  Choose…
+                </option>
+                {field.options?.map((opt) => (
+                  <option key={String(opt.value)} value={String(opt.value)}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              {field.helpText && <p className="mt-0.5 text-[11px] text-muted">{field.helpText}</p>}
+            </div>
           ) : (
             <div key={field.key}>
               <label className="mb-1 block text-xs font-medium text-muted">{field.label}</label>

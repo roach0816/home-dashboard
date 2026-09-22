@@ -30,6 +30,7 @@ import PingMonitorDisplay from "./widgets/displays/PingMonitorDisplay";
 import PrinterDisplay from "./widgets/displays/PrinterDisplay";
 import SynologyDisplay from "./widgets/displays/SynologyDisplay";
 import HdhomerunDisplay from "./widgets/displays/HdhomerunDisplay";
+import MlbTeamDisplay from "./widgets/displays/MlbTeamDisplay";
 
 type DisplayProps = { widget: Widget; compact: boolean; href?: string; icon?: string; sources?: DataSource[] };
 
@@ -77,6 +78,8 @@ function WidgetDisplay({ widget, compact, href, icon, sources }: DisplayProps) {
       return <SynologyDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "hdhomerun":
       return <HdhomerunDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
+    case "mlb-team":
+      return <MlbTeamDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
   }
 }
 

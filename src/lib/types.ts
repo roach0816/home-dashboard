@@ -152,6 +152,11 @@ export type HdhomerunConfig = BaseWidgetConfig & {
   port: number;
 };
 
+export type MlbTeamConfig = BaseWidgetConfig & {
+  /** MLB Stats API team id — see src/lib/mlbTeams.ts. */
+  teamId: number;
+};
+
 export type Widget =
   | { id: string; type: "tempest-weather"; config: WeatherWidgetConfig }
   | { id: string; type: "home-assistant"; config: HomeAssistantConfig }
@@ -173,7 +178,8 @@ export type Widget =
   | { id: string; type: "ping-monitor"; config: PingMonitorConfig }
   | { id: string; type: "printer-snmp"; config: PrinterConfig }
   | { id: string; type: "synology"; config: SynologyConfig }
-  | { id: string; type: "hdhomerun"; config: HdhomerunConfig };
+  | { id: string; type: "hdhomerun"; config: HdhomerunConfig }
+  | { id: string; type: "mlb-team"; config: MlbTeamConfig };
 
 export type WidgetTypeId = Widget["type"];
 
