@@ -9,6 +9,7 @@ import { getWidgetDefinition } from "@/lib/widgets/registry";
 import GenericWidgetConfigModal from "./widgets/GenericWidgetConfigModal";
 import TempestConfigModal from "./widgets/TempestConfigModal";
 import AdguardConfigModal from "./widgets/AdguardConfigModal";
+import SportsConfigModal from "./widgets/SportsConfigModal";
 import TempestDisplay from "./widgets/displays/TempestDisplay";
 import HomeAssistantDisplay from "./widgets/displays/HomeAssistantDisplay";
 import ProxmoxDisplay from "./widgets/displays/ProxmoxDisplay";
@@ -30,7 +31,7 @@ import PingMonitorDisplay from "./widgets/displays/PingMonitorDisplay";
 import PrinterDisplay from "./widgets/displays/PrinterDisplay";
 import SynologyDisplay from "./widgets/displays/SynologyDisplay";
 import HdhomerunDisplay from "./widgets/displays/HdhomerunDisplay";
-import MlbTeamDisplay from "./widgets/displays/MlbTeamDisplay";
+import SportsTeamDisplay from "./widgets/displays/SportsTeamDisplay";
 
 type DisplayProps = { widget: Widget; compact: boolean; href?: string; icon?: string; sources?: DataSource[] };
 
@@ -78,8 +79,8 @@ function WidgetDisplay({ widget, compact, href, icon, sources }: DisplayProps) {
       return <SynologyDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "hdhomerun":
       return <HdhomerunDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
-    case "mlb-team":
-      return <MlbTeamDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
+    case "sports-team":
+      return <SportsTeamDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
   }
 }
 
@@ -194,7 +195,21 @@ export default function WidgetCard({
         />
       )}
 
-      {configuring && widget.type !== "tempest-weather" && widget.type !== "adguard" && (
+      {configuring && widget.type === "sports-team" && (
+        <SportsConfigModal
+          initial={widget.config}
+          onSave={(config) => {
+            onUpdate({ ...widget, config });
+            setConfiguring(false);
+          }}
+          onClose={() => setConfiguring(false)}
+        />
+      )}
+
+      {configuring &&
+        widget.type !== "tempest-weather" &&
+        widget.type !== "adguard" &&
+        widget.type !== "sports-team" && (
         <GenericWidgetConfigModal
           definition={definition}
           widgetId={widget.id}

@@ -1,5 +1,4 @@
 import type { WidgetTypeId } from "@/lib/types";
-import { MLB_TEAMS } from "@/lib/mlbTeams";
 
 export type ConfigFieldSpec = {
   key: string;
@@ -344,22 +343,15 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
     secretFields: [],
   },
   {
-    type: "mlb-team",
+    type: "sports-team",
     sources: ["cloud"],
     defaultRefreshSeconds: 60,
-    name: "MLB Scoreboard",
+    name: "Sports Scoreboard",
     description:
-      "Live score for one MLB team, falling back to its last final score before noon and its next scheduled game after — via MLB's public Stats API, no key needed.",
-    icon: "mdi:baseball",
-    configFields: [
-      {
-        key: "teamId",
-        label: "Team",
-        type: "select",
-        defaultValue: 114,
-        options: MLB_TEAMS.map((t) => ({ value: t.id, label: t.name })),
-      },
-    ],
+      "Live score for one NFL, NBA, MLB, NHL, or MLS team, falling back to its last final score before noon and its next scheduled game after — via ESPN's public API, no key needed.",
+    icon: "mdi:scoreboard-outline",
+    customConfig: true,
+    configFields: [],
     secretFields: [],
   },
 ];

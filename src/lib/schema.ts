@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { THEME_IDS } from "@/lib/themes";
+import { SPORTS_LEAGUES } from "@/lib/sportsLeagues";
 
 export const bookmarkSchema = z.object({
   id: z.string().min(1),
@@ -119,11 +120,12 @@ const hdhomerunConfigSchema = z.object({
   host: z.string().min(1).max(300),
   port: z.number().int().min(1).max(65535).default(80),
 });
-const mlbTeamConfigSchema = z.object({
+const sportsTeamConfigSchema = z.object({
   label,
   refreshSeconds,
   cardSize,
-  teamId: z.number().int().positive(),
+  league: z.enum(SPORTS_LEAGUES),
+  teamId: z.string().min(1).max(20),
 });
 
 export const widgetSchema = z.discriminatedUnion("type", [
@@ -148,7 +150,7 @@ export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("printer-snmp"), config: printerConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("synology"), config: synologyConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("hdhomerun"), config: hdhomerunConfigSchema }),
-  z.object({ id: z.string().min(1), type: z.literal("mlb-team"), config: mlbTeamConfigSchema }),
+  z.object({ id: z.string().min(1), type: z.literal("sports-team"), config: sportsTeamConfigSchema }),
 ]);
 
 export const dashboardDataSchema = z.object({

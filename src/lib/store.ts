@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { DashboardData } from "./types";
 import { dashboardDataSchema, storedDataSchema } from "./schema";
+import { LEGACY_MLB_STATS_ID_TO_ESPN_ID } from "./sportsLeagues";
 
 type WidgetSecrets = Record<string, Record<string, string>>;
 type StoredData = DashboardData & { widgetSecrets: WidgetSecrets };
@@ -124,11 +125,34 @@ async function persistRaw(data: StoredData): Promise<void> {
   await writeQueue;
 }
 
+/**
+ * The v0.7.0 MLB-only widget ("mlb-team") was replaced by the multi-league
+ * "sports-team" widget, which stores ESPN's team id instead of the MLB
+ * Stats API's — two completely different numbering schemes for the same
+ * teams. Without this, an existing "mlb-team" widget would fail schema
+ * validation on the next read and silently wipe the *entire* dashboard back
+ * to the seed data (see the safeParse fallback below) — not just that one
+ * widget.
+ */
+function migrateLegacyWidgets(raw: unknown): unknown {
+  if (typeof raw !== "object" || raw === null || !("widgets" in raw) || !Array.isArray((raw as { widgets: unknown }).widgets)) {
+    return raw;
+  }
+  const widgets = (raw as { widgets: unknown[] }).widgets.map((w) => {
+    if (typeof w !== "object" || w === null || (w as { type?: unknown }).type !== "mlb-team") return w;
+    const config = (w as { config?: Record<string, unknown> }).config ?? {};
+    const espnId = LEGACY_MLB_STATS_ID_TO_ESPN_ID[Number(config.teamId)];
+    if (!espnId) return w; // unrecognized id — leave as-is, will fail validation and fall back like before
+    return { ...w, type: "sports-team", config: { ...config, league: "mlb", teamId: espnId } };
+  });
+  return { ...(raw as object), widgets };
+}
+
 /** Reads the raw on-disk file, including server-only secrets. Never expose this to the client. */
 async function readRaw(): Promise<StoredData> {
   await ensureDataFile();
   const raw = await fs.readFile(DATA_FILE, "utf-8");
-  const parsed = storedDataSchema.safeParse(JSON.parse(raw));
+  const parsed = storedDataSchema.safeParse(migrateLegacyWidgets(JSON.parse(raw)));
   if (!parsed.success) {
     return seedData;
   }

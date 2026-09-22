@@ -101,13 +101,17 @@ Cloudflare's public speed-test endpoint, no credentials or server call
 involved, and only runs when you click "Run test" (not on the usual
 5-minute auto-refresh, so it doesn't burn bandwidth in the background).
 
-**MLB Scoreboard** needs no credentials — it's MLB's own public Stats API.
-Pick a team and it shows a live score when your team is playing, otherwise
-its last final score. Before noon Eastern that's yesterday's (or the most
-recent) final; at noon it switches to the next scheduled game instead,
-since a stale final becomes less useful than "who's up next" once the day
-gets going. The noon cutover is fixed to Eastern time regardless of the
-server's own clock/timezone.
+**Sports Scoreboard** covers NFL, NBA, MLB, NHL, and MLS, all via ESPN's
+public API — no credentials needed. Gets a bespoke config screen: pick a
+league, then a team from that league's live-loaded roster (nothing
+preselected). It shows a live score with clock/inning/period when your
+team is playing, otherwise its last final score. Before noon Eastern
+that's the most recent final; at noon it switches to the next scheduled
+game instead, since a stale final becomes less useful than "who's up
+next" once the day gets going. The noon cutover is fixed to Eastern time
+regardless of the server's own clock/timezone. The card's title links to
+the team's ESPN page; the score/matchup line links to that specific
+game's ESPN page.
 
 **Tempest weather** gets a bespoke config screen instead of the generic
 form, because picking a station benefits from a live dropdown: paste a

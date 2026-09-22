@@ -28,6 +28,7 @@ import WidgetCard from "./WidgetCard";
 import WidgetStoreModal from "./widgets/WidgetStoreModal";
 import TempestConfigModal from "./widgets/TempestConfigModal";
 import AdguardConfigModal from "./widgets/AdguardConfigModal";
+import SportsConfigModal from "./widgets/SportsConfigModal";
 import GenericWidgetConfigModal from "./widgets/GenericWidgetConfigModal";
 import { getWidgetDefinition } from "@/lib/widgets/registry";
 
@@ -333,18 +334,31 @@ export default function Dashboard({
         />
       )}
 
-      {pendingWidget && pendingWidget.type !== "tempest-weather" && pendingWidget.type !== "adguard" && (
-        <GenericWidgetConfigModal
-          definition={getWidgetDefinition(pendingWidget.type)}
-          widgetId={pendingWidget.id}
-          initialConfig={{}}
+      {pendingWidget?.type === "sports-team" && (
+        <SportsConfigModal
           onSave={(config) => {
-            addWidget({ id: pendingWidget.id, type: pendingWidget.type, config } as Widget);
+            addWidget({ id: pendingWidget.id, type: "sports-team", config });
             setPendingWidget(null);
           }}
           onClose={() => setPendingWidget(null)}
         />
       )}
+
+      {pendingWidget &&
+        pendingWidget.type !== "tempest-weather" &&
+        pendingWidget.type !== "adguard" &&
+        pendingWidget.type !== "sports-team" && (
+          <GenericWidgetConfigModal
+            definition={getWidgetDefinition(pendingWidget.type)}
+            widgetId={pendingWidget.id}
+            initialConfig={{}}
+            onSave={(config) => {
+              addWidget({ id: pendingWidget.id, type: pendingWidget.type, config } as Widget);
+              setPendingWidget(null);
+            }}
+            onClose={() => setPendingWidget(null)}
+          />
+        )}
 
       <DndContext
         sensors={sensors}

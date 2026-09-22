@@ -1,4 +1,5 @@
 import type { ThemeId } from "@/lib/themes";
+import type { SportsLeague } from "@/lib/sportsLeagues";
 
 export type Bookmark = {
   id: string;
@@ -152,9 +153,10 @@ export type HdhomerunConfig = BaseWidgetConfig & {
   port: number;
 };
 
-export type MlbTeamConfig = BaseWidgetConfig & {
-  /** MLB Stats API team id — see src/lib/mlbTeams.ts. */
-  teamId: number;
+export type SportsTeamConfig = BaseWidgetConfig & {
+  league: SportsLeague;
+  /** ESPN team id — see src/lib/sportsLeagues.ts. */
+  teamId: string;
 };
 
 export type Widget =
@@ -179,7 +181,7 @@ export type Widget =
   | { id: string; type: "printer-snmp"; config: PrinterConfig }
   | { id: string; type: "synology"; config: SynologyConfig }
   | { id: string; type: "hdhomerun"; config: HdhomerunConfig }
-  | { id: string; type: "mlb-team"; config: MlbTeamConfig };
+  | { id: string; type: "sports-team"; config: SportsTeamConfig };
 
 export type WidgetTypeId = Widget["type"];
 
