@@ -31,7 +31,7 @@ export default function SportsTeamDisplay({
       icon={data.teamLogo || icon}
       sources={sources}
     >
-      {data.mode === "none" && <StatusLine text="No upcoming games scheduled" />}
+      {data.mode === "none" && <StatusLine text="No games scheduled" />}
 
       {(data.mode === "live" || data.mode === "final") && (
         <>

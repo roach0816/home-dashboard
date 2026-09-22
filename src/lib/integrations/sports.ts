@@ -5,10 +5,10 @@ import { LEAGUE_META, type SportsLeague } from "@/lib/sportsLeagues";
 
 const BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 
-// The "switch at 12pm" cutover is a wall-clock concept for whoever's
-// looking at the dashboard, not the server's own clock — which, running in
-// a container, is very likely UTC regardless of where the pod physically
-// runs. Fixed to Eastern since that's this app's timezone.
+// The cutover is a wall-clock concept for whoever's looking at the
+// dashboard, not the server's own clock — which, running in a container,
+// is very likely UTC regardless of where the pod physically runs. Fixed to
+// Eastern since that's this app's timezone.
 const REFERENCE_TIME_ZONE = "America/New_York";
 
 export type SportsTeamOption = { id: string; name: string; logo?: string };
@@ -50,6 +50,25 @@ function currentHourInReferenceZone(): number {
     hour: "2-digit",
   }).format(new Date());
   return Number(formatted);
+}
+
+function easternDateStr(d: Date): string {
+  // en-CA formats as YYYY-MM-DD, which sorts/diffs safely as a calendar date.
+  return new Intl.DateTimeFormat("en-CA", { timeZone: REFERENCE_TIME_ZONE }).format(d);
+}
+
+function daysBetweenEasternDates(from: string, to: string): number {
+  const a = new Date(`${from}T00:00:00Z`).getTime();
+  const b = new Date(`${to}T00:00:00Z`).getTime();
+  return Math.round((b - a) / 86_400_000);
+}
+
+/** A final score stays "current" through the rest of the day it was played, then until 11am Eastern the next day — covers doubleheaders and late finishes without flipping to "next game" mid-evening. */
+function finalStillCurrent(gameDateIso: string): boolean {
+  const daysSinceGame = daysBetweenEasternDates(easternDateStr(new Date(gameDateIso)), easternDateStr(new Date()));
+  if (daysSinceGame <= 0) return true;
+  if (daysSinceGame === 1) return currentHourInReferenceZone() < 11;
+  return false;
 }
 
 function leagueMeta(league: string): { sport: string; slug: string } {
@@ -105,6 +124,9 @@ export async function fetchSportsTeamData(config: SportsTeamConfig): Promise<Spo
     };
   }
 
+  // Scans every event in the window rather than assuming "today's game" —
+  // on a doubleheader day ESPN returns two separate events, and this
+  // always finds whichever one is actually live right now.
   const live = events.find((e) => e.competitions[0].status.type.state === "in");
   if (live) return describe(live, "live");
 
@@ -121,9 +143,7 @@ export async function fetchSportsTeamData(config: SportsTeamConfig): Promise<Spo
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const nextGame = upcoming[0];
 
-  const pastNoon = currentHourInReferenceZone() >= 12;
-
-  if (!pastNoon && lastFinal) return describe(lastFinal, "final");
+  if (lastFinal && finalStillCurrent(lastFinal.date)) return describe(lastFinal, "final");
   if (nextGame) return describe(nextGame, "upcoming");
   if (lastFinal) return describe(lastFinal, "final");
 
