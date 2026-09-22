@@ -24,16 +24,18 @@ the page can view and edit it.
   Falls back to an auto-fetched favicon, then a colored initial-letter
   avatar, if no icon is set.
 - Widgets: a row above the categories for live data, reorderable like
-  everything else. **+ Add widget** opens a searchable widget store with 21
+  everything else. **+ Add widget** opens a searchable widget store with 23
   built-in integrations — Tempest weather, Home Assistant, Proxmox VE,
   Kubernetes/Rancher, AdGuard Home, UniFi Network, Pi-hole, Portainer, Plex,
   Jellyfin, Sonarr, Radarr, TrueNAS, Uptime Kuma, Enphase Solar, an on-demand
   internet speed test, Nextcloud, a generic host/port ping monitor, a
   network printer toner/ink monitor (SNMP, works with most networked
-  printers — Canon, Brother, HP, etc.), a Synology NAS storage monitor, and
-  an HDHomeRun tuner monitor. Each is configured with a small connection
-  form (host + credentials); more types can be added later by extending the
-  registry in `src/lib/widgets/registry.ts` (see
+  printers — Canon, Brother, HP, etc.), a Synology NAS storage monitor, an
+  HDHomeRun tuner monitor, a Sports Scoreboard (NFL/NBA/MLB/NHL/MLS via
+  ESPN), and an MLB Magic Number tracker. Each is configured with a small
+  connection form (host + credentials, or nothing at all for the
+  no-auth-needed sports widgets); more types can be added later by
+  extending the registry in `src/lib/widgets/registry.ts` (see
   [Adding a widget type](#adding-a-widget-type)).
 - Autosave (debounced) to a JSON file on disk — no database required
 - `/api/healthz` for Kubernetes probes
@@ -162,8 +164,10 @@ many days of forecast to display.
    shared primitives in `src/components/widgets/primitives.tsx` cover most
    layouts) and register it in the `switch` in `src/components/WidgetCard.tsx`.
 
-Only Tempest needs a bespoke config modal; everything else works from the
-registry alone.
+Most widgets work from the registry alone; a few (Tempest, AdGuard, Sports
+Scoreboard) need a bespoke config modal instead, because their setup needs
+something the generic form can't do — a live-loaded dropdown, multiple
+host entries, or one selection filtering the options of another.
 
 ## Local development
 
