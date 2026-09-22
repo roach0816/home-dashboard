@@ -30,11 +30,35 @@ export type SportsGameData = {
   statusDetail?: string;
   /** ESPN's game page — the matchup line links here. */
   gameHref?: string;
+  /** Extra detail for a live MLB game only — see fetchMlbLiveDetail(). */
+  mlbLive?: MlbLiveDetail;
+};
+
+export type MlbLiveDetail = {
+  inningNumber: number;
+  inningHalf: "top" | "mid" | "bottom" | "end";
+  outs: number;
+  balls: number;
+  strikes: number;
+  onFirst: boolean;
+  onSecond: boolean;
+  onThird: boolean;
+  batter?: string;
+  pitcher?: string;
+  awayAbbr: string;
+  awayRuns: number;
+  awayHits: number;
+  awayErrors: number;
+  homeAbbr: string;
+  homeRuns: number;
+  homeHits: number;
+  homeErrors: number;
 };
 
 type EspnTeamRef = { id: string; displayName: string; abbreviation: string; logos?: Array<{ href: string }>; logo?: string };
 type EspnCompetitor = { team: EspnTeamRef; homeAway: "home" | "away"; score?: { displayValue?: string } };
 type EspnEvent = {
+  id: string;
   date: string;
   links?: Array<{ href: string }>;
   competitions: Array<{
@@ -75,6 +99,113 @@ function leagueMeta(league: string): { sport: string; slug: string } {
   const meta = LEAGUE_META[league as SportsLeague];
   if (!meta) throw new Error("Unknown league.");
   return meta;
+}
+
+function parseInningHalf(shortDetail: string | undefined): MlbLiveDetail["inningHalf"] | undefined {
+  const m = shortDetail?.trim().match(/^(top|mid|bot(?:tom)?|end)/i);
+  if (!m) return undefined;
+  const w = m[1].toLowerCase();
+  if (w.startsWith("top")) return "top";
+  if (w.startsWith("mid")) return "mid";
+  if (w.startsWith("bot")) return "bottom";
+  return "end";
+}
+
+type EspnAthleteRef = { id?: string; shortName?: string; displayName?: string };
+type EspnPlay = {
+  period?: { type?: string; number?: number };
+  outs?: number;
+  pitchCount?: { balls?: number; strikes?: number };
+  onFirst?: unknown;
+  onSecond?: unknown;
+  onThird?: unknown;
+  participants?: Array<{ athlete?: { id?: string }; type?: string }>;
+};
+type EspnSummary = {
+  header?: {
+    competitions?: Array<{
+      status?: { period?: number; type?: { shortDetail?: string } };
+      competitors?: Array<{
+        homeAway: "home" | "away";
+        score?: string;
+        linescores?: Array<{ hits?: number; errors?: number }>;
+        team?: { abbreviation?: string };
+      }>;
+    }>;
+  };
+  plays?: EspnPlay[];
+  // The starting-lineup "rosters" list omits relief pitchers who enter
+  // later — boxscore.players' per-stat-category athlete lists (built from
+  // actual stat lines, batting and pitching both) are the complete set of
+  // everyone who's actually appeared in the game.
+  boxscore?: { players?: Array<{ statistics?: Array<{ athletes?: Array<{ athlete?: EspnAthleteRef }> }> }> };
+};
+
+/**
+ * The team schedule endpoint (used for everything else) doesn't carry
+ * inning/count/base-runner/batter-pitcher detail — that lives in the
+ * per-game summary endpoint instead, specifically in its play-by-play feed
+ * (the most recent play reflects the current situation) and its roster
+ * list (to resolve batter/pitcher ids to names). Best-effort: returns
+ * undefined on any unexpected shape rather than breaking the whole widget,
+ * since this parses several undocumented ESPN fields.
+ */
+async function fetchMlbLiveDetail(gameId: string): Promise<MlbLiveDetail | undefined> {
+  try {
+    const res = await integrationFetch(`${BASE_URL}/baseball/mlb/summary?event=${gameId}`, { cache: "no-store" });
+    if (!res.ok) return undefined;
+    const body = (await res.json()) as EspnSummary;
+    const comp = body.header?.competitions?.[0];
+    const away = comp?.competitors?.find((c) => c.homeAway === "away");
+    const home = comp?.competitors?.find((c) => c.homeAway === "home");
+    if (!comp || !away || !home) return undefined;
+
+    function sumHitsErrors(c: typeof away): { hits: number; errors: number } {
+      const ls = c?.linescores ?? [];
+      return {
+        hits: ls.reduce((sum, inn) => sum + (inn.hits ?? 0), 0),
+        errors: ls.reduce((sum, inn) => sum + (inn.errors ?? 0), 0),
+      };
+    }
+    const awayHE = sumHitsErrors(away);
+    const homeHE = sumHitsErrors(home);
+
+    const lastPlay = body.plays?.[body.plays.length - 1];
+
+    const rosterMap = new Map<string, string>();
+    for (const teamPlayers of body.boxscore?.players ?? []) {
+      for (const stat of teamPlayers.statistics ?? []) {
+        for (const a of stat.athletes ?? []) {
+          if (a.athlete?.id) rosterMap.set(a.athlete.id, a.athlete.shortName || a.athlete.displayName || "");
+        }
+      }
+    }
+    const batterId = lastPlay?.participants?.find((p) => p.type === "batter")?.athlete?.id;
+    const pitcherId = lastPlay?.participants?.find((p) => p.type === "pitcher")?.athlete?.id;
+
+    return {
+      inningNumber: comp.status?.period ?? lastPlay?.period?.number ?? 0,
+      inningHalf: parseInningHalf(comp.status?.type?.shortDetail) ?? "top",
+      outs: lastPlay?.outs ?? 0,
+      balls: lastPlay?.pitchCount?.balls ?? 0,
+      strikes: lastPlay?.pitchCount?.strikes ?? 0,
+      onFirst: Boolean(lastPlay?.onFirst),
+      onSecond: Boolean(lastPlay?.onSecond),
+      onThird: Boolean(lastPlay?.onThird),
+      batter: batterId ? rosterMap.get(batterId) : undefined,
+      pitcher: pitcherId ? rosterMap.get(pitcherId) : undefined,
+      awayAbbr: away.team?.abbreviation ?? "",
+      awayRuns: Number(away.score ?? 0),
+      awayHits: awayHE.hits,
+      awayErrors: awayHE.errors,
+      homeAbbr: home.team?.abbreviation ?? "",
+      homeRuns: Number(home.score ?? 0),
+      homeHits: homeHE.hits,
+      homeErrors: homeHE.errors,
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 export async function fetchSportsTeams(league: string): Promise<SportsTeamOption[]> {
@@ -128,7 +259,11 @@ export async function fetchSportsTeamData(config: SportsTeamConfig): Promise<Spo
   // on a doubleheader day ESPN returns two separate events, and this
   // always finds whichever one is actually live right now.
   const live = events.find((e) => e.competitions[0].status.type.state === "in");
-  if (live) return describe(live, "live");
+  if (live) {
+    const result = describe(live, "live");
+    if (config.league === "mlb") result.mlbLive = await fetchMlbLiveDetail(live.id);
+    return result;
+  }
 
   const finals = events
     .filter((e) => {

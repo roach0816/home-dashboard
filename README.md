@@ -104,14 +104,23 @@ involved, and only runs when you click "Run test" (not on the usual
 **Sports Scoreboard** covers NFL, NBA, MLB, NHL, and MLS, all via ESPN's
 public API — no credentials needed. Gets a bespoke config screen: pick a
 league, then a team from that league's live-loaded roster (nothing
-preselected). It shows a live score with clock/inning/period when your
-team is playing, otherwise its last final score. Before noon Eastern
-that's the most recent final; at noon it switches to the next scheduled
-game instead, since a stale final becomes less useful than "who's up
-next" once the day gets going. The noon cutover is fixed to Eastern time
-regardless of the server's own clock/timezone. The card's title links to
-the team's ESPN page; the score/matchup line links to that specific
-game's ESPN page.
+preselected). It always shows whatever game is actually being played right
+now (covers doubleheaders correctly — it scans every game in the window,
+not just "today's" one), otherwise the last final score through the rest
+of that day and until 11am Eastern the next day, then the next scheduled
+game. The cutover is fixed to Eastern time regardless of the server's own
+clock/timezone; when there's nothing left on the schedule it says "No
+games scheduled." The card's title links to the team's ESPN page; the
+score/matchup line links to that specific game's ESPN page.
+
+For a live **MLB** game specifically, the card shows a real mini
+scoreboard instead of just a score line: a Runs/Hits/Errors line per team
+(condensed to just the score on a Half-size card), which team is
+currently batting, the inning with a ▲/▼/◆ top/bottom/mid-inning
+indicator, a little bases diamond showing who's on base, the ball-strike
+count and outs, and who's currently at bat and pitching. Other live sports
+(NFL/NBA/NHL/MLS) show a simpler score-plus-period line — ESPN's API
+doesn't expose the same play-by-play detail as generically for those.
 
 **Tempest weather** gets a bespoke config screen instead of the generic
 form, because picking a station benefits from a live dropdown: paste a
