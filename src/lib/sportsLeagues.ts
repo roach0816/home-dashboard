@@ -20,6 +20,40 @@ export function isSportsLeague(value: string): value is SportsLeague {
  * which uses a completely different numbering scheme than ESPN's team ids
  * (e.g. Guardians were 114 there, are "5" here) — see src/lib/store.ts.
  */
+/** All 30 MLB teams with their ESPN id and division — for the Magic Number widget's team picker, which needs no live API call since division alignment is effectively static. */
+export const MLB_TEAMS: Array<{ id: string; name: string; division: string }> = [
+  { id: "30", name: "Tampa Bay Rays", division: "AL East" },
+  { id: "10", name: "New York Yankees", division: "AL East" },
+  { id: "2", name: "Boston Red Sox", division: "AL East" },
+  { id: "14", name: "Toronto Blue Jays", division: "AL East" },
+  { id: "1", name: "Baltimore Orioles", division: "AL East" },
+  { id: "6", name: "Detroit Tigers", division: "AL Central" },
+  { id: "9", name: "Minnesota Twins", division: "AL Central" },
+  { id: "7", name: "Kansas City Royals", division: "AL Central" },
+  { id: "5", name: "Cleveland Guardians", division: "AL Central" },
+  { id: "4", name: "Chicago White Sox", division: "AL Central" },
+  { id: "11", name: "Athletics", division: "AL West" },
+  { id: "3", name: "Los Angeles Angels", division: "AL West" },
+  { id: "13", name: "Texas Rangers", division: "AL West" },
+  { id: "18", name: "Houston Astros", division: "AL West" },
+  { id: "12", name: "Seattle Mariners", division: "AL West" },
+  { id: "15", name: "Atlanta Braves", division: "NL East" },
+  { id: "28", name: "Miami Marlins", division: "NL East" },
+  { id: "20", name: "Washington Nationals", division: "NL East" },
+  { id: "21", name: "New York Mets", division: "NL East" },
+  { id: "22", name: "Philadelphia Phillies", division: "NL East" },
+  { id: "8", name: "Milwaukee Brewers", division: "NL Central" },
+  { id: "23", name: "Pittsburgh Pirates", division: "NL Central" },
+  { id: "24", name: "St. Louis Cardinals", division: "NL Central" },
+  { id: "17", name: "Cincinnati Reds", division: "NL Central" },
+  { id: "16", name: "Chicago Cubs", division: "NL Central" },
+  { id: "19", name: "Los Angeles Dodgers", division: "NL West" },
+  { id: "26", name: "San Francisco Giants", division: "NL West" },
+  { id: "27", name: "Colorado Rockies", division: "NL West" },
+  { id: "25", name: "San Diego Padres", division: "NL West" },
+  { id: "29", name: "Arizona Diamondbacks", division: "NL West" },
+];
+
 export const LEGACY_MLB_STATS_ID_TO_ESPN_ID: Record<number, string> = {
   108: "3", // Los Angeles Angels
   109: "29", // Arizona Diamondbacks

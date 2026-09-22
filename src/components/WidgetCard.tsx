@@ -32,6 +32,7 @@ import PrinterDisplay from "./widgets/displays/PrinterDisplay";
 import SynologyDisplay from "./widgets/displays/SynologyDisplay";
 import HdhomerunDisplay from "./widgets/displays/HdhomerunDisplay";
 import SportsTeamDisplay from "./widgets/displays/SportsTeamDisplay";
+import MlbMagicNumberDisplay from "./widgets/displays/MlbMagicNumberDisplay";
 
 type DisplayProps = { widget: Widget; compact: boolean; href?: string; icon?: string; sources?: DataSource[] };
 
@@ -81,6 +82,8 @@ function WidgetDisplay({ widget, compact, href, icon, sources }: DisplayProps) {
       return <HdhomerunDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "sports-team":
       return <SportsTeamDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
+    case "mlb-magic-number":
+      return <MlbMagicNumberDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
   }
 }
 

@@ -58,7 +58,7 @@ local caching of icon bytes.
 
 ## Widgets
 
-Edit mode → **+ Add widget** opens a store of 22 integrations. Picking one
+Edit mode → **+ Add widget** opens a store of 23 integrations. Picking one
 opens a small config form: a base URL plus whatever credentials that
 service needs (API key, username/password, or a token), plus a
 **Refresh interval** in seconds (defaults to 60s for fast-changing data
@@ -115,12 +115,30 @@ score/matchup line links to that specific game's ESPN page.
 
 For a live **MLB** game specifically, the card shows a real mini
 scoreboard instead of just a score line: a Runs/Hits/Errors line per team
-(condensed to just the score on a Half-size card), which team is
-currently batting, the inning with a ▲/▼/◆ top/bottom/mid-inning
-indicator, a little bases diamond showing who's on base, the ball-strike
-count and outs, and who's currently at bat and pitching. Other live sports
-(NFL/NBA/NHL/MLS) show a simpler score-plus-period line — ESPN's API
-doesn't expose the same play-by-play detail as generically for those.
+(condensed to just the score on a Half-size card), the inning with a
+▲/▼/◆ top/bottom/mid-inning indicator, a little bases diamond showing
+who's on base, the ball-strike count and outs, and who's currently at bat
+and pitching. Other live sports (NFL/NBA/NHL/MLS) show a simpler
+score-plus-period line — ESPN's API doesn't expose the same play-by-play
+detail as generically for those.
+
+**MLB Magic Number** tracks one MLB team's path to the postseason — pick
+a team from the generic config form (no credentials needed, same ESPN
+API). While the season's active it shows the smaller of two magic
+numbers — games needed to clinch the division or a Wild Card spot — with
+the other shown underneath, and switches to a "🏆 [Division] Champions" /
+"Clinched a Wild Card Spot" celebration the moment either one is
+mathematically locked up. The Wild Card number is computed from the
+standard formula (`163 − team wins − first-team-out's losses`) rather
+than trusting ESPN's own `magicNumberWildcard` field, which turned out to
+be computed against the wrong rival team (the last guaranteed spot
+instead of the first team actually missing the playoffs) — verified
+against real standings data before shipping. Once the regular season
+ends, the card switches to a season recap — final record and the
+highest title actually won (Division/League/World Series Champions, with
+context on how the run ended if it wasn't a title) — and stays there
+until the next season's actual Opening Day, not just whenever next
+year's schedule happens to get published (which is often months early).
 
 **Tempest weather** gets a bespoke config screen instead of the generic
 form, because picking a station benefits from a live dropdown: paste a

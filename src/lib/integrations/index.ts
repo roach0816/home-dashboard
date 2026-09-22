@@ -21,6 +21,7 @@ import { fetchPrinterData } from "./printer";
 import { fetchSynologyData } from "./synology";
 import { fetchHdhomerunData } from "./hdhomerun";
 import { fetchSportsTeamData } from "./sports";
+import { fetchMlbMagicNumberData } from "./mlbMagicNumber";
 
 /**
  * Dispatches to the right integration client based on widget type. Takes
@@ -73,5 +74,7 @@ export async function fetchWidgetData(widget: Widget, secrets: Record<string, st
       return fetchHdhomerunData(widget.config);
     case "sports-team":
       return fetchSportsTeamData(widget.config);
+    case "mlb-magic-number":
+      return fetchMlbMagicNumberData(widget.config);
   }
 }

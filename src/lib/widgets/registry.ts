@@ -1,4 +1,5 @@
 import type { WidgetTypeId } from "@/lib/types";
+import { MLB_TEAMS } from "@/lib/sportsLeagues";
 
 export type ConfigFieldSpec = {
   key: string;
@@ -352,6 +353,24 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
     icon: "mdi:scoreboard-outline",
     customConfig: true,
     configFields: [],
+    secretFields: [],
+  },
+  {
+    type: "mlb-magic-number",
+    sources: ["cloud"],
+    defaultRefreshSeconds: 300,
+    name: "MLB Magic Number",
+    description:
+      "Tracks an MLB team's magic number to clinch its division and a Wild Card spot, then a season recap (including postseason results) once the year's over — via ESPN's public API, no key needed.",
+    icon: "mdi:trophy-outline",
+    configFields: [
+      {
+        key: "teamId",
+        label: "Team",
+        type: "select",
+        options: MLB_TEAMS.map((t) => ({ value: t.id, label: `${t.name} (${t.division})` })),
+      },
+    ],
     secretFields: [],
   },
 ];

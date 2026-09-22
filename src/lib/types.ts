@@ -159,6 +159,11 @@ export type SportsTeamConfig = BaseWidgetConfig & {
   teamId: string;
 };
 
+export type MlbMagicNumberConfig = BaseWidgetConfig & {
+  /** ESPN MLB team id — see MLB_TEAMS in src/lib/sportsLeagues.ts. */
+  teamId: string;
+};
+
 export type Widget =
   | { id: string; type: "tempest-weather"; config: WeatherWidgetConfig }
   | { id: string; type: "home-assistant"; config: HomeAssistantConfig }
@@ -181,7 +186,8 @@ export type Widget =
   | { id: string; type: "printer-snmp"; config: PrinterConfig }
   | { id: string; type: "synology"; config: SynologyConfig }
   | { id: string; type: "hdhomerun"; config: HdhomerunConfig }
-  | { id: string; type: "sports-team"; config: SportsTeamConfig };
+  | { id: string; type: "sports-team"; config: SportsTeamConfig }
+  | { id: string; type: "mlb-magic-number"; config: MlbMagicNumberConfig };
 
 export type WidgetTypeId = Widget["type"];
 

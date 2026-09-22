@@ -127,6 +127,12 @@ const sportsTeamConfigSchema = z.object({
   league: z.enum(SPORTS_LEAGUES),
   teamId: z.string().min(1).max(20),
 });
+const mlbMagicNumberConfigSchema = z.object({
+  label,
+  refreshSeconds,
+  cardSize,
+  teamId: z.string().min(1).max(20),
+});
 
 export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("tempest-weather"), config: weatherWidgetConfigSchema }),
@@ -151,6 +157,7 @@ export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("synology"), config: synologyConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("hdhomerun"), config: hdhomerunConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("sports-team"), config: sportsTeamConfigSchema }),
+  z.object({ id: z.string().min(1), type: z.literal("mlb-magic-number"), config: mlbMagicNumberConfigSchema }),
 ]);
 
 export const dashboardDataSchema = z.object({
