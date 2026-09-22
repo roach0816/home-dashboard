@@ -104,15 +104,13 @@ function PlayersLine({ live }: { live: MlbLiveDetail }) {
 
 /** Full-card live baseball layout — R/H/E table + diamond, then inning/outs/count, then who's up. */
 function MlbLiveFull({ live }: { live: MlbLiveDetail }) {
-  const awayBatting = live.inningHalf === "top";
-  const homeBatting = live.inningHalf === "bottom";
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <table className="text-xs">
           <thead>
             <tr className="text-[10px] text-muted">
-              <th className="w-6" />
+              <th />
               <th className="w-5 font-normal">R</th>
               <th className="w-5 font-normal">H</th>
               <th className="w-5 font-normal">E</th>
@@ -120,17 +118,13 @@ function MlbLiveFull({ live }: { live: MlbLiveDetail }) {
           </thead>
           <tbody>
             <tr>
-              <td className="pr-1.5 text-left font-semibold text-foreground">
-                {awayBatting && <span className="text-accent">▸</span>} {live.awayAbbr}
-              </td>
+              <td className="pr-1.5 text-left font-semibold text-foreground">{live.awayAbbr}</td>
               <td className="text-center font-bold text-foreground">{live.awayRuns}</td>
               <td className="text-center text-muted">{live.awayHits}</td>
               <td className="text-center text-muted">{live.awayErrors}</td>
             </tr>
             <tr>
-              <td className="pr-1.5 text-left font-semibold text-foreground">
-                {homeBatting && <span className="text-accent">▸</span>} {live.homeAbbr}
-              </td>
+              <td className="pr-1.5 text-left font-semibold text-foreground">{live.homeAbbr}</td>
               <td className="text-center font-bold text-foreground">{live.homeRuns}</td>
               <td className="text-center text-muted">{live.homeHits}</td>
               <td className="text-center text-muted">{live.homeErrors}</td>
