@@ -61,17 +61,25 @@ async function tempestFetch(token: string, path: string, query: string): Promise
 
 // A station's coordinates don't move, so its "City, ST" never changes —
 // but this was being re-fetched on every single poll (every few minutes,
-// forever) against a free, keyless geocoding API. That's an unbounded
-// number of calls over a station's lifetime for a value that's static,
-// and a very plausible way to eventually trip that API's rate limiting.
-// A successful lookup is cached for the life of the process; a failed one
-// only briefly, so a transient hiccup (or an exhausted quota that resets)
-// gets retried instead of being stuck either way forever.
+// forever) against a free geocoding API. That's an unbounded number of
+// calls over a station's lifetime for a value that's static. A successful
+// lookup is cached for the life of the process; a failed one only
+// briefly, so a transient hiccup gets retried instead of being stuck
+// either way forever.
 const CITY_STATE_SUCCESS_TTL_MS = Number.POSITIVE_INFINITY;
 const CITY_STATE_FAILURE_TTL_MS = 60 * 60 * 1000;
 const cityStateCache = new Map<string, { value: string | undefined; expiresAt: number }>();
 
-/** Best-effort reverse geocode of a station's coordinates to "City, ST". Never throws. */
+/**
+ * Best-effort reverse geocode of a station's coordinates to "City, ST".
+ * Never throws. Uses OpenStreetMap's Nominatim rather than a commercial
+ * geocoding API — verified against a real deployment that a "bigdatacloud"
+ * -branded host got DNS-sinkholed to 0.0.0.0 by the user's own Pi-hole,
+ * almost certainly because that domain reads exactly like a data-broker
+ * name to a privacy/tracker blocklist. Nominatim is a long-established,
+ * widely-used mapping domain that real map applications depend on, so
+ * self-hosted ad-blocking setups are far less likely to ever block it.
+ */
 export async function reverseGeocodeCityState(latitude: number, longitude: number): Promise<string | undefined> {
   // Round to ~11m precision — plenty for "which city/town is this in" while
   // still sharing a cache entry across floating-point noise in stored coords.
@@ -81,19 +89,19 @@ export async function reverseGeocodeCityState(latitude: number, longitude: numbe
 
   let value: string | undefined;
   try {
+    // Nominatim's usage policy requires an identifying User-Agent and caps
+    // usage at roughly one request/second — the caching above means this
+    // realistically runs once ever per station, nowhere near that limit.
     const res = await integrationFetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
-      { cache: "no-store", timeoutMs: 5000 },
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=14`,
+      { cache: "no-store", timeoutMs: 5000, headers: { "User-Agent": "HomeDashboard/1.0 (+https://github.com/roach0816/home-dashboard)" } },
     );
     if (res.ok) {
-      const body = (await res.json()) as {
-        city?: string;
-        locality?: string;
-        principalSubdivisionCode?: string;
-        principalSubdivision?: string;
-      };
-      const city = body.city || body.locality;
-      const state = body.principalSubdivisionCode?.split("-")[1] || body.principalSubdivision;
+      const body = (await res.json()) as { name?: string; address?: { state?: string; [key: string]: string | undefined } };
+      const city = body.name;
+      const stateFull = body.address?.state;
+      const stateCode = body.address?.["ISO3166-2-lvl4"]?.split("-")[1];
+      const state = stateCode || stateFull;
       value = city && state ? `${city}, ${state}` : city || state || undefined;
       if (value === undefined) {
         console.error(`[reverseGeocodeCityState] got a 200 but no usable city/state in the body: ${JSON.stringify(body)}`);
@@ -102,7 +110,11 @@ export async function reverseGeocodeCityState(latitude: number, longitude: numbe
       console.error(`[reverseGeocodeCityState] non-OK response: ${res.status} ${res.statusText}`);
     }
   } catch (err) {
-    console.error(`[reverseGeocodeCityState] request failed: ${err instanceof Error ? err.message : String(err)}`);
+    // Node's fetch wraps the real DNS/TCP/TLS error in a generic "fetch
+    // failed" TypeError — the actual reason (e.g. ENOTFOUND, ECONNREFUSED,
+    // a timeout) is on .cause, which a plain err.message loses entirely.
+    const cause = err instanceof Error && err.cause instanceof Error ? ` — cause: ${err.cause.message}` : "";
+    console.error(`[reverseGeocodeCityState] request failed: ${err instanceof Error ? err.message : String(err)}${cause}`);
     value = undefined;
   }
 
