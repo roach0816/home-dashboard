@@ -95,8 +95,14 @@ export async function reverseGeocodeCityState(latitude: number, longitude: numbe
       const city = body.city || body.locality;
       const state = body.principalSubdivisionCode?.split("-")[1] || body.principalSubdivision;
       value = city && state ? `${city}, ${state}` : city || state || undefined;
+      if (value === undefined) {
+        console.error(`[reverseGeocodeCityState] got a 200 but no usable city/state in the body: ${JSON.stringify(body)}`);
+      }
+    } else {
+      console.error(`[reverseGeocodeCityState] non-OK response: ${res.status} ${res.statusText}`);
     }
-  } catch {
+  } catch (err) {
+    console.error(`[reverseGeocodeCityState] request failed: ${err instanceof Error ? err.message : String(err)}`);
     value = undefined;
   }
 
