@@ -20,7 +20,7 @@ export default function TempestDisplay({
 }) {
   const { config } = widget;
   const { data, error } = useWidgetData<TempestForecast>(widget.id, (config.refreshSeconds ?? 300) * 1000);
-  const label = config.label || data?.cityState || data?.locationName || "Tempest station";
+  const label = config.label || data?.cityState || data?.locationName || "Weather station";
 
   if (error) return <WidgetError label={label} error={error} compact={compact} href={href} sources={sources} />;
   if (!data) return <WidgetLoading label={label} compact={compact} href={href} sources={sources} />;
@@ -62,9 +62,6 @@ export default function TempestDisplay({
           </span>
         )}
       </div>
-      {showCurrent && !compact && data.current.conditions && (
-        <p className="-mt-1.5 truncate text-xs text-muted">{data.current.conditions}</p>
-      )}
 
       {showCurrent && (
         <div className="flex items-center justify-between gap-2">

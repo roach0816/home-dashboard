@@ -154,7 +154,10 @@ official field ids WeeWX/Home Assistant integrations use. The gateway
 itself has no location or forecast data, so forecast comes from
 [Open-Meteo](https://open-meteo.com) (free, no key) using latitude/
 longitude you provide — only needed if you're showing forecast at all.
-Both providers let you choose what the widget shows (full details /
+Those same coordinates are reverse-geocoded once into a "City, ST" name,
+used as the card's title when you don't set a custom label — same as
+Tempest already does for its own station's coordinates. Both providers
+let you choose what the widget shows (full details /
 current conditions only / forecast only) and how many days of forecast to
 display.
 

@@ -60,7 +60,7 @@ async function tempestFetch(token: string, path: string, query: string): Promise
 }
 
 /** Best-effort reverse geocode of a station's coordinates to "City, ST". Never throws. */
-async function reverseGeocodeCityState(latitude: number, longitude: number): Promise<string | undefined> {
+export async function reverseGeocodeCityState(latitude: number, longitude: number): Promise<string | undefined> {
   try {
     const res = await integrationFetch(
       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,

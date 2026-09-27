@@ -294,7 +294,9 @@ export default function TempestConfigModal({
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder={provider === "tempest" ? "Defaults to the station name" : "Defaults to \"Ecowitt station\""}
+            placeholder={
+              provider === "tempest" ? "Defaults to the station name" : "Defaults to the station's location (e.g. \"Countryside, VA\")"
+            }
             className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
           />
         </div>

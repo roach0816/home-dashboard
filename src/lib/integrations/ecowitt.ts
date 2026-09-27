@@ -1,7 +1,7 @@
 import "server-only";
 import { integrationFetch } from "@/lib/insecureFetch";
 import type { WeatherWidgetConfig } from "@/lib/types";
-import type { TempestForecast, TempestCurrent, TempestDaily } from "@/lib/tempest";
+import { reverseGeocodeCityState, type TempestForecast, type TempestCurrent, type TempestDaily } from "@/lib/tempest";
 
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 
@@ -202,8 +202,15 @@ export async function fetchEcowittWidgetData(config: WeatherWidgetConfig): Promi
     daily = await fetchOpenMeteoForecast(config.latitude, config.longitude, config.unit, config.forecastDays);
   }
 
+  // Local gateways have no location of their own — reverse-geocode the
+  // same coordinates given for forecast so the card's default title (when
+  // no custom label is set) reads as an actual place, not a generic name.
+  const cityState =
+    config.latitude != null && config.longitude != null ? await reverseGeocodeCityState(config.latitude, config.longitude) : undefined;
+
   return {
     locationName: config.label || "Ecowitt station",
+    cityState,
     unit: config.unit,
     current,
     daily,
