@@ -99,7 +99,7 @@ function RecapBody({ data }: { data: MlbMagicNumberData }) {
       </div>
       {data.record && (
         <div className="flex items-center justify-between border-t border-border pt-1.5 text-xs">
-          <span className="text-muted">Final record</span>
+          <span className="text-muted">{opener ? "Final record" : "Regular season record"}</span>
           <span className="font-bold text-foreground">{data.record}</span>
         </div>
       )}
