@@ -217,31 +217,33 @@ export default function SportsTeamDisplay({
 
       {((data.mode === "live" && !data.mlbLive) || data.mode === "final") && (
         <>
-          {data.gameHref ? (
-            <a
-              href={data.gameHref}
-              target="_blank"
-              rel="noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-baseline gap-2 hover:underline"
-            >
-              <span className="text-xl font-semibold text-foreground">
-                {data.teamAbbr} {data.teamScore}
-              </span>
-              <span className="text-sm text-muted">
-                {data.opponentScore} {data.opponentAbbr}
-              </span>
-            </a>
-          ) : (
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-semibold text-foreground">
-                {data.teamAbbr} {data.teamScore}
-              </span>
-              <span className="text-sm text-muted">
-                {data.opponentScore} {data.opponentAbbr}
-              </span>
-            </div>
-          )}
+          {(() => {
+            const teamWon = Number(data.teamScore) > Number(data.opponentScore);
+            const oppWon = Number(data.opponentScore) > Number(data.teamScore);
+            const scoreLine = (
+              <>
+                <span className={`text-xl text-foreground ${teamWon ? "font-bold" : "font-normal"}`}>
+                  {data.teamAbbr} {data.teamScore}
+                </span>
+                <span className={`text-xl text-foreground ${oppWon ? "font-bold" : "font-normal"}`}>
+                  {data.opponentScore} {data.opponentAbbr}
+                </span>
+              </>
+            );
+            return data.gameHref ? (
+              <a
+                href={data.gameHref}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="flex items-baseline gap-2 hover:underline"
+              >
+                {scoreLine}
+              </a>
+            ) : (
+              <div className="flex items-baseline gap-2">{scoreLine}</div>
+            );
+          })()}
           <StatusLine
             text={data.mode === "live" ? `● Live — ${data.statusDetail ?? ""}` : (data.statusDetail ?? "Final")}
             tone={data.mode === "live" ? "good" : "muted"}
