@@ -199,7 +199,16 @@ export async function fetchEcowittWidgetData(config: WeatherWidgetConfig): Promi
     if (config.latitude == null || config.longitude == null) {
       throw new Error("Latitude/longitude required for forecast — add them in this widget's settings.");
     }
-    daily = await fetchOpenMeteoForecast(config.latitude, config.longitude, config.unit, config.forecastDays);
+    try {
+      daily = await fetchOpenMeteoForecast(config.latitude, config.longitude, config.unit, config.forecastDays);
+    } catch {
+      // Current conditions came straight from the local gateway and have
+      // nothing to do with the cloud forecast provider — a transient
+      // outage/rate-limit there shouldn't take down the whole card when
+      // there's perfectly good local data to show. Degrades to no
+      // forecast section rather than failing outright.
+      daily = [];
+    }
   }
 
   // Local gateways have no location of their own — reverse-geocode the
