@@ -28,6 +28,10 @@ export default function TempestDisplay({
   const unitLabel = config.unit === "fahrenheit" ? "°F" : "°C";
   const showCurrent = config.display !== "forecast";
   const showForecast = config.display !== "current";
+  // Ecowitt's current conditions always come from the local gateway, even
+  // though its forecast (like Tempest's) is cloud-sourced — so the current
+  // block gets both badges, but forecast-only stays cloud-only.
+  const currentSources: DataSource[] = config.provider === "ecowitt" ? ["cloud", "lan"] : ["cloud"];
 
   return (
     <div className={`animate-widget-in flex flex-col gap-2.5 ${compact ? "p-2.5" : "p-3.5"}`}>
@@ -48,7 +52,7 @@ export default function TempestDisplay({
               <p className="truncate text-sm font-medium text-foreground">{label}</p>
             )}
           </div>
-          <SourceIcons sources={sources} />
+          <SourceIcons sources={showCurrent ? currentSources : sources} />
         </div>
         {showCurrent && (
           // Doubles as this widget's "logo" corner — the live conditions icon is more

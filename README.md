@@ -25,7 +25,8 @@ the page can view and edit it.
   avatar, if no icon is set.
 - Widgets: a row above the categories for live data, reorderable like
   everything else. **+ Add widget** opens a searchable widget store with 23
-  built-in integrations — Tempest weather, Home Assistant, Proxmox VE,
+  built-in integrations — a Weather Station (Tempest or Ecowitt), Home
+  Assistant, Proxmox VE,
   Kubernetes/Rancher, AdGuard Home, UniFi Network, Pi-hole, Portainer, Plex,
   Jellyfin, Sonarr, Radarr, TrueNAS, Uptime Kuma, Enphase Solar, an on-demand
   internet speed test, Nextcloud, a generic host/port ping monitor, a
@@ -142,13 +143,20 @@ context on how the run ended if it wasn't a title) — and stays there
 until the next season's actual Opening Day, not just whenever next
 year's schedule happens to get published (which is often months early).
 
-**Tempest weather** gets a bespoke config screen instead of the generic
-form, because picking a station benefits from a live dropdown: paste a
-personal access token from
-[tempestwx.com/settings/tokens](https://tempestwx.com/settings/tokens),
-click **Load stations**, pick yours. You can also choose what the widget
-shows (full details / current conditions only / forecast only) and how
-many days of forecast to display.
+**Weather Station** covers two services, picked from a dropdown at the top
+of its (bespoke) config screen: **Tempest** — paste a personal access token
+from [tempestwx.com/settings/tokens](https://tempestwx.com/settings/tokens),
+click **Load stations**, pick yours — or **Ecowitt** (e.g. a WS90 on a
+GW1100/GW2000/console gateway). Ecowitt needs no cloud account: current
+conditions (temperature, humidity, wind, rain) are read directly from the
+gateway's local HTTP API on your own network, using the same real,
+official field ids WeeWX/Home Assistant integrations use. The gateway
+itself has no location or forecast data, so forecast comes from
+[Open-Meteo](https://open-meteo.com) (free, no key) using latitude/
+longitude you provide — only needed if you're showing forecast at all.
+Both providers let you choose what the widget shows (full details /
+current conditions only / forecast only) and how many days of forecast to
+display.
 
 ### Adding a widget type
 

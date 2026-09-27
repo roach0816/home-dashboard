@@ -43,8 +43,17 @@ export type BaseWidgetConfig = {
 };
 
 export type WeatherDisplayMode = "full" | "current" | "forecast";
+export type WeatherProvider = "tempest" | "ecowitt";
+
 export type WeatherWidgetConfig = BaseWidgetConfig & {
+  provider?: WeatherProvider;
+  /** Tempest only. */
   stationId?: number;
+  /** Ecowitt only — local gateway (GW1100/GW2000/etc.) IP or hostname. Current conditions are read directly from it. */
+  ecowittHost?: string;
+  /** Ecowitt only — needed for forecast, since the local gateway has no location data of its own. */
+  latitude?: number;
+  longitude?: number;
   unit: "fahrenheit" | "celsius";
   display: WeatherDisplayMode;
   forecastDays: number;

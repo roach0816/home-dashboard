@@ -56,8 +56,9 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
     type: "tempest-weather",
     sources: ["cloud"],
     defaultRefreshSeconds: 300,
-    name: "Tempest Weather Station",
-    description: "Current conditions and forecast from your own WeatherFlow Tempest station.",
+    name: "Weather Station",
+    description:
+      "Current conditions and forecast from your own weather station — WeatherFlow Tempest or Ecowitt (e.g. WS90).",
     icon: "mdi:weather-partly-cloudy",
     customConfig: true,
     configFields: [],

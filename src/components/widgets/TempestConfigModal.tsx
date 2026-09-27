@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../Modal";
 import PasswordInput from "./PasswordInput";
-import type { WeatherDisplayMode, WidgetCardSize, WeatherWidgetConfig } from "@/lib/types";
+import type { WeatherDisplayMode, WeatherProvider, WidgetCardSize, WeatherWidgetConfig } from "@/lib/types";
 
 type Station = { id: number; name: string };
 
@@ -24,13 +24,21 @@ export default function TempestConfigModal({
   onSave: (config: WeatherWidgetConfig) => void;
   onClose: () => void;
 }) {
+  const [provider, setProvider] = useState<WeatherProvider>(initial?.provider ?? "tempest");
+
   const [tokenDraft, setTokenDraft] = useState("");
   const [tokenConfigured, setTokenConfigured] = useState(false);
   const [stations, setStations] = useState<Station[] | null>(null);
   const [stationsError, setStationsError] = useState<string | null>(null);
   const [loadingStations, setLoadingStations] = useState(false);
-
   const [stationId, setStationId] = useState<number | undefined>(initial?.stationId);
+
+  const [ecowittHost, setEcowittHost] = useState(initial?.ecowittHost ?? "");
+  const [latitude, setLatitude] = useState(initial?.latitude != null ? String(initial.latitude) : "");
+  const [longitude, setLongitude] = useState(initial?.longitude != null ? String(initial.longitude) : "");
+  const [testState, setTestState] = useState<"idle" | "testing" | "ok" | "error">("idle");
+  const [testMessage, setTestMessage] = useState<string | null>(null);
+
   const [label, setLabel] = useState(initial?.label ?? "");
   const [unit, setUnit] = useState<"fahrenheit" | "celsius">(initial?.unit ?? "fahrenheit");
   const [display, setDisplay] = useState<WeatherDisplayMode>(initial?.display ?? "full");
@@ -72,10 +80,47 @@ export default function TempestConfigModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [widgetId]);
 
+  function buildConfig(): WeatherWidgetConfig {
+    return {
+      provider,
+      stationId: provider === "tempest" ? stationId : undefined,
+      ecowittHost: provider === "ecowitt" ? ecowittHost.trim() || undefined : undefined,
+      latitude: provider === "ecowitt" && latitude.trim() ? Number(latitude) : undefined,
+      longitude: provider === "ecowitt" && longitude.trim() ? Number(longitude) : undefined,
+      label: label.trim() || undefined,
+      unit,
+      display,
+      forecastDays,
+      refreshSeconds,
+      cardSize,
+    };
+  }
+
+  async function testConnection() {
+    setTestState("testing");
+    setTestMessage(null);
+    try {
+      const res = await fetch("/api/widgets/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "tempest-weather", config: buildConfig(), secrets: {}, widgetId }),
+      });
+      const body = await res.json();
+      if (body.ok) setTestState("ok");
+      else {
+        setTestState("error");
+        setTestMessage(body.error || "Test failed");
+      }
+    } catch {
+      setTestState("error");
+      setTestMessage("Could not reach the server.");
+    }
+  }
+
   async function handleSave() {
-    if (stationId == null) return;
+    if (!canSave) return;
     setSaving(true);
-    if (tokenDraft.trim()) {
+    if (provider === "tempest" && tokenDraft.trim()) {
       await fetch(`/api/widgets/${widgetId}/secrets`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -83,90 +128,173 @@ export default function TempestConfigModal({
       }).catch(() => {});
     }
     setSaving(false);
-    onSave({
-      stationId,
-      label: label.trim() || undefined,
-      unit,
-      display,
-      forecastDays,
-      refreshSeconds,
-      cardSize,
-    });
+    onSave(buildConfig());
   }
 
-  const canSave = stationId != null;
+  const needsForecastLocation = provider === "ecowitt" && display !== "current";
+  const canSave =
+    provider === "tempest"
+      ? stationId != null
+      : ecowittHost.trim().length > 0 && (!needsForecastLocation || (latitude.trim() && longitude.trim()));
 
   return (
-    <Modal title="Tempest weather widget" onClose={onClose} widthClass="max-w-md">
+    <Modal title="Weather widget" onClose={onClose} widthClass="max-w-md">
       <div className="flex flex-col gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Tempest API token</label>
+          <label className="mb-1 block text-xs font-medium text-muted">Weather service</label>
           <div className="flex gap-2">
-            <div className="min-w-0 flex-1">
-              <PasswordInput
-                value={tokenDraft}
-                onChange={setTokenDraft}
-                placeholder={tokenConfigured ? "•••••••••••• (configured)" : "Paste your token"}
-              />
-            </div>
-            <button
-              type="button"
-              disabled={!tokenDraft.trim() || loadingStations}
-              onClick={() => loadStations(tokenDraft.trim())}
-              className="shrink-0 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-40"
-            >
-              Load stations
-            </button>
+            {(
+              [
+                { value: "tempest" as const, label: "Tempest" },
+                { value: "ecowitt" as const, label: "Ecowitt" },
+              ]
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setProvider(opt.value)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium ${
+                  provider === opt.value ? "bg-accent text-accent-foreground" : "border border-border text-muted hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
-          <p className="mt-1 text-[11px] text-muted">
-            Get one from{" "}
-            <a
-              href="https://tempestwx.com/settings/tokens"
-              target="_blank"
-              rel="noreferrer"
-              className="underline hover:text-foreground"
-            >
-              tempestwx.com
-            </a>
-            .
-          </p>
         </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium text-muted">Station</label>
-          {loadingStations && <p className="text-xs text-muted">Loading your stations…</p>}
-          {stationsError && (
-            <p className="rounded-md border border-red-400/30 bg-red-500/5 p-2 text-xs text-red-400">
-              {stationsError}
-            </p>
-          )}
-          {!loadingStations && stations && stations.length === 0 && (
-            <p className="text-xs text-muted">No stations found on this Tempest account.</p>
-          )}
-          {!loadingStations && stations && stations.length > 0 && (
-            <select
-              value={stationId ?? ""}
-              onChange={(e) => setStationId(e.target.value ? Number(e.target.value) : undefined)}
-              className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
-            >
-              <option value="" disabled>
-                Choose a station…
-              </option>
-              {stations.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
+        {provider === "tempest" && (
+          <>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted">Tempest API token</label>
+              <div className="flex gap-2">
+                <div className="min-w-0 flex-1">
+                  <PasswordInput
+                    value={tokenDraft}
+                    onChange={setTokenDraft}
+                    placeholder={tokenConfigured ? "•••••••••••• (configured)" : "Paste your token"}
+                  />
+                </div>
+                <button
+                  type="button"
+                  disabled={!tokenDraft.trim() || loadingStations}
+                  onClick={() => loadStations(tokenDraft.trim())}
+                  className="shrink-0 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-40"
+                >
+                  Load stations
+                </button>
+              </div>
+              <p className="mt-1 text-[11px] text-muted">
+                Get one from{" "}
+                <a
+                  href="https://tempestwx.com/settings/tokens"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  tempestwx.com
+                </a>
+                .
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted">Station</label>
+              {loadingStations && <p className="text-xs text-muted">Loading your stations…</p>}
+              {stationsError && (
+                <p className="rounded-md border border-red-400/30 bg-red-500/5 p-2 text-xs text-red-400">
+                  {stationsError}
+                </p>
+              )}
+              {!loadingStations && stations && stations.length === 0 && (
+                <p className="text-xs text-muted">No stations found on this Tempest account.</p>
+              )}
+              {!loadingStations && stations && stations.length > 0 && (
+                <select
+                  value={stationId ?? ""}
+                  onChange={(e) => setStationId(e.target.value ? Number(e.target.value) : undefined)}
+                  className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+                >
+                  <option value="" disabled>
+                    Choose a station…
+                  </option>
+                  {stations.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </>
+        )}
+
+        {provider === "ecowitt" && (
+          <>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted">Gateway IP / hostname</label>
+              <input
+                value={ecowittHost}
+                onChange={(e) => setEcowittHost(e.target.value)}
+                placeholder="192.168.1.80"
+                className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+              />
+              <p className="mt-1 text-[11px] text-muted">
+                Your GW1100/GW2000/console&rsquo;s local IP — current conditions (temperature, humidity, wind, rain,
+                UV) are read directly from it over your local network, no cloud account needed.
+              </p>
+            </div>
+
+            {display !== "current" && (
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs font-medium text-muted">Latitude</label>
+                  <input
+                    value={latitude}
+                    onChange={(e) => setLatitude(e.target.value)}
+                    placeholder="41.4993"
+                    className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs font-medium text-muted">Longitude</label>
+                  <input
+                    value={longitude}
+                    onChange={(e) => setLongitude(e.target.value)}
+                    placeholder="-81.6944"
+                    className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
+                  />
+                </div>
+              </div>
+            )}
+            {display !== "current" && (
+              <p className="-mt-2 text-[11px] text-muted">
+                The gateway has no location of its own, so forecast (from Open-Meteo, no key needed) needs
+                coordinates for where your station actually is.
+              </p>
+            )}
+
+            <div className="flex items-center justify-between border-t border-border pt-3">
+              <button
+                type="button"
+                onClick={testConnection}
+                disabled={testState === "testing" || !ecowittHost.trim()}
+                className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-surface-2 disabled:opacity-50"
+              >
+                {testState === "testing" ? "Testing…" : "Test connection"}
+              </button>
+              {testState === "ok" && <span className="text-xs text-emerald-500">Connected</span>}
+              {testState === "error" && <span className="max-w-[60%] text-right text-xs text-red-400">{testMessage}</span>}
+            </div>
+          </>
+        )}
 
         <div>
           <label className="mb-1 block text-xs font-medium text-muted">Label (optional)</label>
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Defaults to the station name"
+            placeholder={provider === "tempest" ? "Defaults to the station name" : "Defaults to \"Ecowitt station\""}
             className="w-full rounded-md border border-border bg-surface-2 px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-accent"
           />
         </div>

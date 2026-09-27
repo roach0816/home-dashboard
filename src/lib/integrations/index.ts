@@ -1,6 +1,7 @@
 import "server-only";
 import type { Widget } from "@/lib/types";
 import { fetchTempestWidgetData } from "@/lib/tempest";
+import { fetchEcowittWidgetData } from "./ecowitt";
 import { fetchHomeAssistantData } from "./homeAssistant";
 import { fetchProxmoxData } from "./proxmox";
 import { fetchKubernetesData } from "./kubernetes";
@@ -31,7 +32,9 @@ import { fetchMlbMagicNumberData } from "./mlbMagicNumber";
 export async function fetchWidgetData(widget: Widget, secrets: Record<string, string>): Promise<unknown> {
   switch (widget.type) {
     case "tempest-weather":
-      return fetchTempestWidgetData(widget.config, secrets);
+      return widget.config.provider === "ecowitt"
+        ? fetchEcowittWidgetData(widget.config)
+        : fetchTempestWidgetData(widget.config, secrets);
     case "home-assistant":
       return fetchHomeAssistantData(widget.config, secrets);
     case "proxmox":
