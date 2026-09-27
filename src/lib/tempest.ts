@@ -59,27 +59,52 @@ async function tempestFetch(token: string, path: string, query: string): Promise
   return data;
 }
 
+// A station's coordinates don't move, so its "City, ST" never changes —
+// but this was being re-fetched on every single poll (every few minutes,
+// forever) against a free, keyless geocoding API. That's an unbounded
+// number of calls over a station's lifetime for a value that's static,
+// and a very plausible way to eventually trip that API's rate limiting.
+// A successful lookup is cached for the life of the process; a failed one
+// only briefly, so a transient hiccup (or an exhausted quota that resets)
+// gets retried instead of being stuck either way forever.
+const CITY_STATE_SUCCESS_TTL_MS = Number.POSITIVE_INFINITY;
+const CITY_STATE_FAILURE_TTL_MS = 60 * 60 * 1000;
+const cityStateCache = new Map<string, { value: string | undefined; expiresAt: number }>();
+
 /** Best-effort reverse geocode of a station's coordinates to "City, ST". Never throws. */
 export async function reverseGeocodeCityState(latitude: number, longitude: number): Promise<string | undefined> {
+  // Round to ~11m precision — plenty for "which city/town is this in" while
+  // still sharing a cache entry across floating-point noise in stored coords.
+  const key = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+  const cached = cityStateCache.get(key);
+  if (cached && Date.now() < cached.expiresAt) return cached.value;
+
+  let value: string | undefined;
   try {
     const res = await integrationFetch(
       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
       { cache: "no-store", timeoutMs: 5000 },
     );
-    if (!res.ok) return undefined;
-    const body = (await res.json()) as {
-      city?: string;
-      locality?: string;
-      principalSubdivisionCode?: string;
-      principalSubdivision?: string;
-    };
-    const city = body.city || body.locality;
-    const state = body.principalSubdivisionCode?.split("-")[1] || body.principalSubdivision;
-    if (city && state) return `${city}, ${state}`;
-    return city || state || undefined;
+    if (res.ok) {
+      const body = (await res.json()) as {
+        city?: string;
+        locality?: string;
+        principalSubdivisionCode?: string;
+        principalSubdivision?: string;
+      };
+      const city = body.city || body.locality;
+      const state = body.principalSubdivisionCode?.split("-")[1] || body.principalSubdivision;
+      value = city && state ? `${city}, ${state}` : city || state || undefined;
+    }
   } catch {
-    return undefined;
+    value = undefined;
   }
+
+  cityStateCache.set(key, {
+    value,
+    expiresAt: Date.now() + (value !== undefined ? CITY_STATE_SUCCESS_TTL_MS : CITY_STATE_FAILURE_TTL_MS),
+  });
+  return value;
 }
 
 export async function fetchBetterForecast(
