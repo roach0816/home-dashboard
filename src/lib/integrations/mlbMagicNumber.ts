@@ -242,6 +242,15 @@ export async function fetchMlbMagicNumberData(config: MlbMagicNumberConfig): Pro
     const eliminated = me.clincher === "e";
     const wildCardMagicNumber = computeWildCardMagicNumber(teamId, leagueEntries);
     const rank = divisionRank(teamId, meta.division, leagueEntries);
+    // ESPN's own clincher flag ("x" division, "y" wild card, "z" best
+    // record — verified against live standings data) is the authoritative
+    // signal for whether a team has actually clinched. The magic-number-
+    // hits-zero check is kept as a fallback for teams the flag hasn't been
+    // set on yet, but the flag wins whenever it's present so a brief lag or
+    // mismatch between the two fields on ESPN's side can't hide a real
+    // clinch that already happened.
+    const divisionClinchedByFlag = me.clincher === "x" || me.clincher === "z";
+    const wildCardClinchedByFlag = me.clincher === "y" || me.clincher === "z";
 
     return {
       ...base,
@@ -251,9 +260,9 @@ export async function fetchMlbMagicNumberData(config: MlbMagicNumberConfig): Pro
       standingText: `${ordinal(rank)} in ${meta.division}`,
       divisionName: meta.division,
       divisionMagicNumber: eliminated ? null : me.magicNumberDivision,
-      divisionClinched: !eliminated && me.magicNumberDivision !== null && me.magicNumberDivision <= 0,
+      divisionClinched: !eliminated && (divisionClinchedByFlag || (me.magicNumberDivision !== null && me.magicNumberDivision <= 0)),
       wildCardMagicNumber: eliminated ? null : wildCardMagicNumber,
-      wildCardClinched: !eliminated && wildCardMagicNumber !== null && wildCardMagicNumber <= 0,
+      wildCardClinched: !eliminated && (wildCardClinchedByFlag || (wildCardMagicNumber !== null && wildCardMagicNumber <= 0)),
       eliminated,
     };
   }
