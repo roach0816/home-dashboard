@@ -70,14 +70,25 @@ function teamMeta(teamId: string) {
   return meta;
 }
 
-/** Regular-season game dates (sorted) and the season's contextual year, from the team's schedule. Passing a season fetches that specific year; omitting it uses ESPN's own "currently relevant" resolution. */
+/**
+ * Regular-season game dates (sorted) and the season's contextual year, from
+ * the team's schedule. Passing a season fetches that specific year;
+ * omitting it uses ESPN's own "currently relevant" resolution for the
+ * year — but seasontype=2 is always forced explicitly, because once the
+ * regular season ends ESPN's default (unparameterized) schedule view
+ * switches to showing only the postseason bracket, and the type===2 filter
+ * below would otherwise silently come up empty (verified against live
+ * data: the endpoint returned 5 postseason-only events for a team whose
+ * regular season had just ended, with zero regular-season events present
+ * even when an explicit season= year was also passed).
+ */
 async function fetchScheduleSeasonInfo(
   teamId: string,
   season?: number,
 ): Promise<
   { year: number; regularSeasonDates: string[]; teamName: string; teamAbbr: string; teamHref?: string; teamLogo?: string } | undefined
 > {
-  const url = `${BASE_URL}/teams/${teamId}/schedule${season ? `?season=${season}` : ""}`;
+  const url = `${BASE_URL}/teams/${teamId}/schedule?seasontype=2${season ? `&season=${season}` : ""}`;
   const res = await integrationFetch(url, { cache: "no-store" });
   if (!res.ok) return undefined;
   const body = (await res.json()) as {
