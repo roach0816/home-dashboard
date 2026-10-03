@@ -2,6 +2,7 @@ import "server-only";
 import { integrationFetch } from "@/lib/insecureFetch";
 import type { SportsTeamConfig } from "@/lib/types";
 import { LEAGUE_META, type SportsLeague } from "@/lib/sportsLeagues";
+import { roundFromHeadline, seriesFromEvents, seriesStatusText } from "@/lib/integrations/postseasonSeries";
 
 const BASE_URL = "https://site.api.espn.com/apis/site/v2/sports";
 
@@ -32,6 +33,8 @@ export type SportsGameData = {
   gameHref?: string;
   /** Extra detail for a live MLB game only — see fetchMlbLiveDetail(). */
   mlbLive?: MlbLiveDetail;
+  /** Where the team stands in its playoff series, e.g. "ALDS: CHW leads series 1-0, best of 5". Postseason games only. */
+  seriesText?: string;
 };
 
 export type MlbLiveDetail = {
@@ -56,7 +59,7 @@ export type MlbLiveDetail = {
 };
 
 type EspnTeamRef = { id: string; displayName: string; abbreviation: string; logos?: Array<{ href: string }>; logo?: string };
-type EspnCompetitor = { team: EspnTeamRef; homeAway: "home" | "away"; score?: { displayValue?: string } };
+type EspnCompetitor = { team: EspnTeamRef; homeAway: "home" | "away"; score?: { displayValue?: string }; winner?: boolean };
 type EspnEvent = {
   id: string;
   date: string;
@@ -64,6 +67,7 @@ type EspnEvent = {
   competitions: Array<{
     status: { type: { state: "pre" | "in" | "post"; completed: boolean; shortDetail?: string } };
     competitors: EspnCompetitor[];
+    notes?: Array<{ headline?: string }>;
   }>;
 };
 
@@ -233,12 +237,20 @@ export async function fetchSportsTeamData(config: SportsTeamConfig): Promise<Spo
   const events = body.events ?? [];
   const now = Date.now();
 
+  // Playoff series are built from the same events the widget already has
+  // (the default schedule during the postseason lists the series' games), so
+  // a series line costs no extra request.
+  const series = seriesFromEvents(events, String(config.teamId));
+
   function describe(e: EspnEvent, mode: SportsGameData["mode"]): SportsGameData {
     const comp = e.competitions[0];
     const mine = comp.competitors.find((c) => c.team.id === String(config.teamId));
     const opp = comp.competitors.find((c) => c.team.id !== String(config.teamId));
     const gameHref = e.links?.find((l) => /\/game\/_\/gameId\//.test(l.href))?.href ?? e.links?.[0]?.href;
+    const round = roundFromHeadline(comp.notes?.[0]?.headline);
+    const seriesState = round ? series.find((s) => s.round === round) : undefined;
     return {
+      seriesText: seriesState ? seriesStatusText(seriesState, team.abbreviation) : undefined,
       teamName: team.displayName,
       teamAbbr: team.abbreviation,
       teamLogo: team.logo,

@@ -271,6 +271,8 @@ export default function SportsTeamDisplay({
           <StatusLine text={data.statusDetail ? `Next: ${data.statusDetail}` : "Next game TBD"} />
         </>
       )}
+
+      {data.seriesText && <StatusLine text={data.seriesText} tone="good" />}
     </WidgetFrame>
   );
 }

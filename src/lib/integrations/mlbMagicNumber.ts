@@ -2,6 +2,7 @@ import "server-only";
 import { integrationFetch } from "@/lib/insecureFetch";
 import type { MlbMagicNumberConfig } from "@/lib/types";
 import { MLB_TEAMS } from "@/lib/sportsLeagues";
+import { seriesFromEvents, seriesStatusText, type SeriesEvent, type SeriesState } from "@/lib/integrations/postseasonSeries";
 
 const BASE_URL = "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb";
 const STANDINGS_URL = "https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings";
@@ -155,81 +156,16 @@ function divisionRank(teamId: string, division: string, leagueEntries: LeagueEnt
   return divisionEntries.findIndex((e) => e.teamId === teamId) + 1;
 }
 
-const ROUND_RANK: Record<string, number> = { "Wild Card": 1, "Wild Card Series": 1, ALDS: 2, NLDS: 2, ALCS: 3, NLCS: 3, "World Series": 4 };
-
-type RoundSummary = { round: string; rank: number; myWins: number; oppWins: number; opponent: string; won: boolean };
-type UpcomingRound = { round: string; date: string };
-
 /**
- * Postseason brackets are published (with placeholder "TBD" opponents) as
- * soon as a team clinches, well before those games are actually played —
- * verified against real current-season data, where every ALDS game for a
- * team that had just clinched showed up as scheduled/incomplete with
- * "TBD" as the opponent. Counting those as losses (0 wins vs the games
- * played) is what caused a team still alive in the postseason to be
- * reported as eliminated. Only games ESPN marks completed count toward a
- * round's outcome; a round with zero completed games hasn't happened yet.
+ * Every playoff series this team has been in (or is scheduled to be in),
+ * in bracket order. Only completed games count toward a series, so a
+ * bracket published with "TBD" placeholder games is still just upcoming.
  */
-async function fetchPostseasonSummary(
-  teamId: string,
-  season: number,
-): Promise<{ resolved: RoundSummary[]; upcoming?: UpcomingRound }> {
+async function fetchPostseasonSeries(teamId: string, season: number): Promise<SeriesState[]> {
   const res = await integrationFetch(`${BASE_URL}/teams/${teamId}/schedule?season=${season}&seasontype=3`, { cache: "no-store" });
-  if (!res.ok) return { resolved: [] };
-  const body = (await res.json()) as {
-    events?: Array<{
-      date: string;
-      competitions?: Array<{
-        status?: { type?: { completed?: boolean } };
-        notes?: Array<{ headline?: string }>;
-        competitors?: Array<{ team?: { id?: string; displayName?: string }; winner?: boolean }>;
-      }>;
-    }>;
-  };
-  const byRound = new Map<string, Array<{ won: boolean; opponent: string; date: string; completed: boolean }>>();
-  for (const e of body.events ?? []) {
-    const comp = e.competitions?.[0];
-    const headline = comp?.notes?.[0]?.headline;
-    const round = headline?.split(" - Game")[0]?.trim();
-    if (!round) continue;
-    const mine = comp?.competitors?.find((c) => c.team?.id === teamId);
-    const opp = comp?.competitors?.find((c) => c.team?.id !== teamId);
-    if (!mine || !opp) continue;
-    const games = byRound.get(round) ?? [];
-    games.push({
-      won: Boolean(mine.winner),
-      opponent: opp.team?.displayName ?? "",
-      date: e.date,
-      completed: Boolean(comp?.status?.type?.completed),
-    });
-    byRound.set(round, games);
-  }
-
-  const resolved: RoundSummary[] = [];
-  let upcoming: UpcomingRound | undefined;
-  for (const [round, allGames] of byRound) {
-    allGames.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    const played = allGames.filter((g) => g.completed);
-    if (played.length === 0) {
-      // Nothing in this round has actually happened yet — track the
-      // earliest such round as "what's coming up" rather than a result.
-      const earliestDate = allGames[0].date;
-      if (!upcoming || new Date(earliestDate) < new Date(upcoming.date)) {
-        upcoming = { round, date: earliestDate };
-      }
-      continue;
-    }
-    const myWins = played.filter((g) => g.won).length;
-    resolved.push({
-      round,
-      rank: ROUND_RANK[round] ?? 0,
-      myWins,
-      oppWins: played.length - myWins,
-      opponent: played[played.length - 1].opponent,
-      won: myWins > played.length - myWins,
-    });
-  }
-  return { resolved: resolved.sort((a, b) => a.rank - b.rank), upcoming };
+  if (!res.ok) throw new Error(`ESPN API error (${res.status})`);
+  const body = (await res.json()) as { events?: SeriesEvent[] };
+  return seriesFromEvents(body.events ?? [], teamId);
 }
 
 export async function fetchMlbMagicNumberData(config: MlbMagicNumberConfig): Promise<MlbMagicNumberData> {
@@ -278,64 +214,74 @@ export async function fetchMlbMagicNumberData(config: MlbMagicNumberConfig): Pro
     };
   }
 
+  // The regular season is over, but the team may still be playing: wild
+  // card, division series, LCS and World Series rounds each decide their
+  // outcome on series thresholds, not on whichever game was played last.
   const leagueEntries = await fetchLeagueStandings(leagueName, current.year);
   const me = leagueEntries.find((e) => e.teamId === teamId);
-  const { resolved, upcoming } = await fetchPostseasonSummary(teamId, current.year);
+  const series = await fetchPostseasonSeries(teamId, current.year);
 
   const record = me ? `${me.wins}-${me.losses}` : undefined;
   const divisionChampion = me?.divisionGamesBehind === "-";
-  const worldSeries = resolved.find((r) => r.rank === 4);
-  const lcs = resolved.find((r) => r.rank === 3);
-  const highestResolvedRound = resolved[resolved.length - 1];
+  const madePlayoffs = me?.clincher === "x" || me?.clincher === "y" || me?.clincher === "z";
   const leagueAbbr = leagueName === "American League" ? "AL" : "NL";
 
+  const eliminatedIn = series.find((s) => s.status === "lost");
+  const worldSeries = series.find((s) => s.rank === 4);
+  const leagueSeries = series.find((s) => s.rank === 3);
+  const champion = worldSeries?.status === "won";
+  const stillAlive = !eliminatedIn && !champion && (series.length > 0 || madePlayoffs);
+
   function upcomingText(): string | undefined {
-    if (!upcoming) return undefined;
+    const next = series.find((s) => s.status === "upcoming");
+    if (!next) return undefined;
     const date = new Intl.DateTimeFormat("en-US", { timeZone: REFERENCE_TIME_ZONE, month: "long", day: "numeric" }).format(
-      new Date(upcoming.date),
+      new Date(next.firstGameDate),
     );
-    return `${highestResolvedRound ? "Advanced to" : "Begins"} the ${upcoming.round} — ${date}`;
+    const advanced = series.some((s) => s.status === "won");
+    return `${advanced ? "Advanced to" : "Begins"} the ${next.round} — ${date}`;
   }
 
   let headlineTier: MlbMagicNumberData["headlineTier"] = "none";
   let headlineText = "Season Complete";
   let contextText: string | undefined;
 
-  if (worldSeries?.won) {
+  if (champion && worldSeries) {
     headlineTier = "world-series";
     headlineText = "World Series Champions";
-    contextText = `Defeated the ${worldSeries.opponent}, ${worldSeries.myWins} games to ${worldSeries.oppWins}`;
-  } else if (lcs?.won) {
+    contextText = `Defeated the ${worldSeries.opponentName}, ${worldSeries.myWins} games to ${worldSeries.oppWins}`;
+  } else if (leagueSeries?.status === "won") {
     headlineTier = "league";
     headlineText = `${leagueAbbr} Champions`;
-    contextText =
-      worldSeries && !worldSeries.won
-        ? `Lost the World Series to the ${worldSeries.opponent}, ${worldSeries.oppWins} games to ${worldSeries.myWins}`
-        : upcomingText();
   } else if (divisionChampion) {
     headlineTier = "division";
     headlineText = `${meta.division} Champions`;
-    contextText =
-      highestResolvedRound && !highestResolvedRound.won
-        ? `Eliminated in the ${highestResolvedRound.round} by the ${highestResolvedRound.opponent}`
-        : upcomingText();
-  } else if (highestResolvedRound) {
-    contextText = highestResolvedRound.won
-      ? upcomingText()
-      : `Eliminated in the ${highestResolvedRound.round} by the ${highestResolvedRound.opponent}`;
-  } else if (upcoming) {
-    // A Wild Card team with nothing resolved yet — definitely still made the playoffs.
+  } else if (stillAlive) {
     headlineText = "Made the Playoffs";
-    contextText = upcomingText();
-  } else if (me) {
+  }
+
+  if (!champion) {
+    const inProgress = series.find((s) => s.status === "in-progress");
+    if (eliminatedIn?.rank === 4) {
+      contextText = `Lost the World Series to the ${eliminatedIn.opponentName}, ${eliminatedIn.oppWins} games to ${eliminatedIn.myWins}`;
+    } else if (eliminatedIn) {
+      contextText = `Eliminated in the ${eliminatedIn.round} by the ${eliminatedIn.opponentName}`;
+    } else if (inProgress) {
+      contextText = seriesStatusText(inProgress, current.teamAbbr);
+    } else {
+      contextText = upcomingText();
+    }
+  }
+
+  if (!stillAlive && !champion && !eliminatedIn && !madePlayoffs && me) {
     const rank = divisionRank(teamId, meta.division, leagueEntries);
     contextText = `${ordinal(rank)} in ${meta.division}, ${me.divisionGamesBehind === "-" ? "0" : me.divisionGamesBehind} games back — missed the playoffs`;
   }
 
-  // Still alive in the postseason — the "next season opens" footer would
-  // be misleading (and premature) while there's more baseball left to play.
+  // Next season's opener only makes sense once the team's season is truly
+  // finished — not while a round is still in progress or yet to be played.
   let nextSeasonOpener: string | undefined;
-  if (!upcoming) {
+  if (!stillAlive) {
     const next = await fetchScheduleSeasonInfo(teamId, current.year + 1);
     nextSeasonOpener = next?.regularSeasonDates[0];
   }

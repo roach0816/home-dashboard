@@ -125,6 +125,12 @@ and pitching. Other live sports (NFL/NBA/NHL/MLS) show a simpler
 score-plus-period line — ESPN's API doesn't expose the same play-by-play
 detail as generically for those.
 
+During the playoffs the card also shows where the team's series stands
+(e.g. "ALDS: CHW leads series 1-0, best of 5"). Series length follows the
+round: Wild Card is best-of-3, the Division Series best-of-5, and the
+LCS and World Series best-of-7. A series only counts once a game is
+actually completed, so unplayed placeholder games never decide one.
+
 **MLB Magic Number** tracks one MLB team's path to the postseason — pick
 a team from the generic config form (no credentials needed, same ESPN
 API). While the season's active it shows the smaller of two magic
@@ -142,6 +148,10 @@ highest title actually won (Division/League/World Series Champions, with
 context on how the run ended if it wasn't a title) — and stays there
 until the next season's actual Opening Day, not just whenever next
 year's schedule happens to get published (which is often months early).
+While the team is still alive in the postseason, the recap shows the
+current series status instead of "Eliminated": a team is only out once a
+series is decided against it, using the same best-of-3/5/7 thresholds as
+the Sports Scoreboard.
 
 **Weather Station** covers two services, picked from a dropdown at the top
 of its (bespoke) config screen: **Tempest** — paste a personal access token
