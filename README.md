@@ -24,7 +24,7 @@ the page can view and edit it.
   Falls back to an auto-fetched favicon, then a colored initial-letter
   avatar, if no icon is set.
 - Widgets: a row above the categories for live data, reorderable like
-  everything else. **+ Add widget** opens a searchable widget store with 23
+  everything else. **+ Add widget** opens a searchable widget store with 24
   built-in integrations — a Weather Station (Tempest or Ecowitt), Home
   Assistant, Proxmox VE,
   Kubernetes/Rancher, AdGuard Home, UniFi Network, Pi-hole, Portainer, Plex,
@@ -33,7 +33,9 @@ the page can view and edit it.
   network printer toner/ink monitor (SNMP, works with most networked
   printers — Canon, Brother, HP, etc.), a Synology NAS storage monitor, an
   HDHomeRun tuner monitor, a Sports Scoreboard (NFL/NBA/MLB/NHL/MLS via
-  ESPN), and an MLB Magic Number tracker. Each is configured with a small
+  ESPN), an MLB Magic Number tracker, and a MeshCore Home card (radio state,
+  traffic counters, contacts, and unread messages from a MeshCore Home
+  server, using a read-only API key). Each is configured with a small
   connection form (host + credentials, or nothing at all for the
   no-auth-needed sports widgets); more types can be added later by
   extending the registry in `src/lib/widgets/registry.ts` (see
@@ -61,7 +63,7 @@ local caching of icon bytes.
 
 ## Widgets
 
-Edit mode → **+ Add widget** opens a store of 23 integrations. Picking one
+Edit mode → **+ Add widget** opens a store of 24 integrations. Picking one
 opens a small config form: a base URL plus whatever credentials that
 service needs (API key, username/password, or a token), plus a
 **Refresh interval** in seconds (defaults to 60s for fast-changing data

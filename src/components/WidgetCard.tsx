@@ -17,6 +17,7 @@ import KubernetesDisplay from "./widgets/displays/KubernetesDisplay";
 import AdguardDisplay from "./widgets/displays/AdguardDisplay";
 import UnifiDisplay from "./widgets/displays/UnifiDisplay";
 import PiholeDisplay from "./widgets/displays/PiholeDisplay";
+import MeshcoreHomeDisplay from "./widgets/displays/MeshcoreHomeDisplay";
 import PortainerDisplay from "./widgets/displays/PortainerDisplay";
 import PlexDisplay from "./widgets/displays/PlexDisplay";
 import JellyfinDisplay from "./widgets/displays/JellyfinDisplay";
@@ -52,6 +53,8 @@ function WidgetDisplay({ widget, compact, href, icon, sources }: DisplayProps) {
       return <UnifiDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "pihole":
       return <PiholeDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
+    case "meshcore-home":
+      return <MeshcoreHomeDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "portainer":
       return <PortainerDisplay widget={widget} compact={compact} href={href} icon={icon} sources={sources} />;
     case "plex":

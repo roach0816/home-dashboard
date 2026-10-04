@@ -8,6 +8,7 @@ import { fetchKubernetesData } from "./kubernetes";
 import { fetchAdguardData } from "./adguard";
 import { fetchUnifiData } from "./unifi";
 import { fetchPiholeData } from "./pihole";
+import { fetchMeshcoreHomeData } from "./meshcoreHome";
 import { fetchPortainerData } from "./portainer";
 import { fetchPlexData } from "./plex";
 import { fetchJellyfinData } from "./jellyfin";
@@ -47,6 +48,8 @@ export async function fetchWidgetData(widget: Widget, secrets: Record<string, st
       return fetchUnifiData(widget.config, secrets);
     case "pihole":
       return fetchPiholeData(widget.config, secrets);
+    case "meshcore-home":
+      return fetchMeshcoreHomeData(widget.config, secrets);
     case "portainer":
       return fetchPortainerData(widget.config, secrets);
     case "plex":

@@ -161,6 +161,19 @@ export const WIDGET_REGISTRY: WidgetDefinition[] = [
     secretFields: [{ key: "password", label: "Password", helpText: "Your Pi-hole admin password (or an app password)." }],
   },
   {
+    type: "meshcore-home",
+    sources: ["lan"],
+    linkField: "baseUrl",
+    defaultRefreshSeconds: 60,
+    name: "MeshCore Home",
+    description: "Radio status, traffic counters, contacts, and unread messages from your MeshCore Home archive.",
+    icon: "selfhst:meshcore",
+    configFields: [{ key: "baseUrl", label: "Base URL", type: "url", placeholder: "http://meshcore.local:8080" }],
+    secretFields: [
+      { key: "apiKey", label: "API key", helpText: "Settings → API keys in MeshCore Home. A read-only key is enough." },
+    ],
+  },
+  {
     type: "portainer",
     sources: ["lan"],
     linkField: "baseUrl",

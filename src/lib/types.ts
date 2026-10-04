@@ -96,6 +96,10 @@ export type PiholeConfig = BaseWidgetConfig & {
   baseUrl: string;
 };
 
+export type MeshcoreHomeConfig = BaseWidgetConfig & {
+  baseUrl: string;
+};
+
 export type PortainerConfig = BaseWidgetConfig & {
   baseUrl: string;
   insecureTls?: boolean;
@@ -181,6 +185,7 @@ export type Widget =
   | { id: string; type: "adguard"; config: AdguardConfig }
   | { id: string; type: "unifi"; config: UnifiConfig }
   | { id: string; type: "pihole"; config: PiholeConfig }
+  | { id: string; type: "meshcore-home"; config: MeshcoreHomeConfig }
   | { id: string; type: "portainer"; config: PortainerConfig }
   | { id: string; type: "plex"; config: PlexConfig }
   | { id: string; type: "jellyfin"; config: JellyfinConfig }

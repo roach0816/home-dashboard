@@ -75,6 +75,7 @@ const unifiConfigSchema = z.object({
   insecureTls,
 });
 const piholeConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
+const meshcoreHomeConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
 const portainerConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl, insecureTls });
 const plexConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
 const jellyfinConfigSchema = z.object({ label, refreshSeconds, cardSize, linkToDevice, baseUrl });
@@ -146,6 +147,7 @@ export const widgetSchema = z.discriminatedUnion("type", [
   z.object({ id: z.string().min(1), type: z.literal("adguard"), config: adguardConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("unifi"), config: unifiConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("pihole"), config: piholeConfigSchema }),
+  z.object({ id: z.string().min(1), type: z.literal("meshcore-home"), config: meshcoreHomeConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("portainer"), config: portainerConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("plex"), config: plexConfigSchema }),
   z.object({ id: z.string().min(1), type: z.literal("jellyfin"), config: jellyfinConfigSchema }),
